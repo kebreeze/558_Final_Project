@@ -12,6 +12,13 @@ library(shiny)
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
 
+  output$mymap<- renderLeaflet({
+    mapStates<- map("state", fill = TRUE, plot = FALSE)
+    
+    leaflet(data = mapStates)%>%
+      addTiles() %>%
+      addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
+  })
     # output$distPlot <- renderPlot({
     # 
     #     # generate bins based on input$bins from ui.R
