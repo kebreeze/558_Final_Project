@@ -5,9 +5,20 @@ This app will allow users to explore up-to-date information about covid, influen
 
 
 *  A list of packages needed to run the app.  
-    +  shiny  
-    +  shinydashboard  
-    +  jsonlite  
+    +  `shiny`  
+    +  `shinydashboard`  
+    +  `jsonlite`  
+    +  `tidyverse`  
+    +  `leaflet`  
+    +  `shinycssloaders`  
+    +  `plotly`  
+    +  `htmltools`  
+    +  `DT`  
+    +  `shinyjs`  
+    +  `maps`  
+    +  `sp`  
+    +  `geojsonio`  
+    
 
 *  A line of code that would install all the packages used (so we can easily grab that and run it prior to running your app).  
 

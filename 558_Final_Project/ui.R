@@ -12,7 +12,7 @@ library(shinyjs)
 shinyUI(fluidPage(
   dashboardPage(
     #add title
-    dashboardHeader( title = "Temporary Title"),
+    dashboardHeader( title = "US Respiratory Illness Dashboard"),
     #Define sidebar items
     dashboardSidebar(sidebarMenu(
       menuItem("About", tabName = "about", icon = icon("home")),

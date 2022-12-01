@@ -2,6 +2,8 @@ library(jsonlite)
 library(tidyverse)
 library(maps)
 library(sp)
+library(geojsonio)
+library(geojsonlint)
 #Contacting CDC's API. There are three possible endpoints to contact, "Total_Deaths", "Flu_Vaccination" and "Covid_Vaccination".
 
 getEndpointInfo<- function(endpointName){
@@ -65,6 +67,99 @@ Deaths_Data<- Clean_Deaths_Data(Total_Deaths)
 
 
 
+
+
+###############################################################
+#### DATA EXPLORATION PAGE CODE###############################
+
+###################Numerical Summaries#######################
+
+
+##########Helper functions
+
+#getVar() allows to return variable name based on user input
+getVar<- function(variable){
+  death_variable<-
+    CDCvars[variable]
+}
+
+#getGrouping() allows to return grouping variable name based on user input
+getGrouping<- function(groupByVariable){
+  groupsBy<-
+    groupings[groupByVariable]
+}
+
+
+
+####################Numerical Summaries
+
+getSummary<- function(summary_variable, grouping){
+
+#Allowing user input for variable to use for summary data. 
+  death_variable<-
+    getVar(summary_variable)
+  # death_variable<- 
+  #   if(summary_variable=="Covid 19 Deaths"){
+  #     "Covid_19_Deaths"
+  #   } else if(summary_variable=="Total Deaths (All Causes)"){
+  #     "Deaths_Total"
+  #   } else if(summary_variable=="Pneumonia Deaths"){
+  #     "Pneumonia_Deaths"
+  #   } else if(summary_variable=="Influenza Deaths"){
+  #     "Influenza_Deaths"
+  #   } else if(summary_variable=="Pneumonia Or Influenza Deaths"){
+  #     "Pneumonia_Or_Influenza_Deaths"
+  #   } else if(summary_variable=="Pneumonia, Influenza Or Covid 19 Deaths"){
+  #     "Pneumonia_Influenza_Or_Covid_Deaths"
+  #   }
+
+#Allowing user input for how to group summary data    
+  groupSummaryBy<-
+     if(grouping=="Age"){
+       "Age_Group"
+     } else if(grouping=="Jurisdiction"){
+       "jurisdiction"
+     } else if(grouping=="Report Week"){
+       "mmwrweek"
+     } else if(grouping=="Report Year"){
+       "mmwryear"
+     }
+  
+   summaryData<- 
+#Allowing user to see overall summary by selecting "All Groups".
+     if(grouping=="All Groups"){
+       Deaths_Data%>%
+         summarise(
+           Mean_Deaths_Per_Week = mean(.data[[death_variable]], na.rm=TRUE), 
+           Median_Deaths_Per_Week = median(.data[[death_variable]], na.rm = TRUE),
+           Maximum_Deaths_Per_Week = max(.data[[death_variable]], na.rm = TRUE))
+#Allowing user to see summary by subgroup selected.
+     } else {
+       Deaths_Data%>%
+         group_by(.data[[groupSummaryBy]])%>%
+         summarise(
+           Mean_Deaths_Per_Week = mean(.data[[death_variable]], na.rm=TRUE), 
+           Median_Deaths_Per_Week = median(.data[[death_variable]], na.rm = TRUE),
+           Maximum_Deaths_Per_Week = max(.data[[death_variable]], na.rm = TRUE))
+     }
+
+  return(summaryData)
+}
+
+
+
+sum<-getSummary("Covid 19 Deaths", "Age")
+
+
+
+
+
+
+
+
+
+
+
 ########WORKING ON CODE FOR STATE LOCATION DATA
 stateLocation<-as_tibble(state.name)
 
@@ -84,23 +179,14 @@ stateInfoRename<- stateInfo%>%
 
 #Assigning HHS Regions 
 
-###############################################################
-#### DATA EXPLORATION PAGE CODE###############################
-
-summary(Deaths_Data$Deaths_Total)
-
-joined<-full_join(Deaths_Data, stateInfoRename)
-
-Deaths_Data_Regions<-joined%>%
-  mutate(
-    Area_Covered = if(Area%in%)
-  )
-
-
-
 #################INTERACTIVE MAP###############################
   
   mapStates<- map("state", fill = TRUE, plot = FALSE)
+
+baseMap<-leaflet(data = mapStates)%>%
+  addTiles()
+
+
 
   leaflet(data = mapStates)%>%
     addTiles() %>%
