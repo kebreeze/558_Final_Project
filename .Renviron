@@ -3,5 +3,7 @@ baseURL="https://data.cdc.gov/resource/"
 total_deaths="ynw2-4viq.json"
 flu_vaccination="vh55-3he6.json"
 covid_vaccination="unsk-b7fc.json"
+covd_case_surveillance="n8mc-b4w4.geojson"
+CDC_covid_levels="3nnm-4jni"
 
 
