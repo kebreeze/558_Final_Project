@@ -20,44 +20,9 @@ shinyServer(function(input, output, session) {
     caption = as.character(input$varDeath)
     )
 
-  #Bar Plots based on user inputs
-  output$barPlot<- renderPlot({
-
-    if(input$plot == "By Year Only"){
-      ggplot(Deaths_Data, aes(x=mmwryear, y=Deaths_Data[,CDCvars[input$varDeathBar]])) + 
-        geom_col() +
-        labs(
-          x="Report Year",
-          y=input$varDeathBar
-        )
-      
-    } else if(input$plot == "By Age Only"){
-      ggplot(Deaths_Data, aes(x=Age_Group, y=Deaths_Data[,CDCvars[input$varDeathBar]])) + 
-        geom_col() +
-        labs(
-          x="Age Group",
-          y=input$varDeathBar
-        )
-      
-    } else if(input$plot == "By Year Grouped By Age"){
-      ggplot(Deaths_Data, aes(x=mmwryear, y=Deaths_Data[,CDCvars[input$varDeathBar]])) + 
-        geom_col(aes(fill = Age_Group), position = "dodge") + 
-        labs(
-          x="Report Year",
-          y=input$varDeathBar
-        ) +
-        scale_fill_discrete(name="Age Group")
-      
-    } else if(input$plot == "By Age Grouped By Year"){
-      ggplot(Deaths_Data, aes(x=Age_Group, y=Deaths_Data[,CDCvars[input$varDeathBar]])) + 
-        geom_col(aes(fill = mmwryear), position = "dodge") + 
-        labs(
-          x="Age Group",
-          y=input$varDeathBar
-      ) +
-        scale_fill_discrete(name="Report Year")
-    }
-  })
+#Bar Plots based on user inputs
+  output$barPlot<- renderPlot(
+    {get_bar_plot(input$varDeathBar, input$barplotType)})
   
   output$mymap<- renderLeaflet({
     mapStates<- map("state", fill = TRUE, plot = FALSE)

@@ -21,7 +21,6 @@ shinyUI(fluidPage(
         menuItem("Application", tabName = "app", icon = icon("biohazard"))
         )
       ),
-    
     #Define the body of the app
     dashboardBody(
       tabItems(
@@ -30,7 +29,7 @@ shinyUI(fluidPage(
                 fluidRow(
                   #box to contain picture
                   box(
-                    title = h1("Interactive Respiratory Illnesses Dashboard"),
+                    title = h1("US Covid 19 Deaths Dashboard"),
                     width = 12,
                     img(src="CDC_Flu_Gif.gif")),
                   #box to contain description of purpose
@@ -84,8 +83,8 @@ shinyUI(fluidPage(
                                             selectInput("varDeathBar", 
                                                         label = "Variable to Plot",
                                                         choices = names(CDCvars),
-                                            ),
-                                            radioButtons("plot",
+                                                        ),
+                                            radioButtons("barplotType",
                                                          "Select Plot Type",
                                                          choices = c("By Year Only", "By Age Only", "By Year Grouped By Age", "By Age Grouped By Year")
                                                          )
@@ -104,7 +103,7 @@ shinyUI(fluidPage(
                                         status = "primary",
                                         dataTableOutput("summary")
                                         ),
-                                    box(title = "Graph",
+                                    box(title = "Bar Graph",
                                         width=NULL, 
                                         solidHeader = TRUE,
                                         status = "primary",
@@ -119,8 +118,10 @@ shinyUI(fluidPage(
                                     )
                              )
                            ),
+                  #Modeling page tab
                   tabPanel("Modeling Page",
                            tabsetPanel(
+                             #Modelling info tab
                              tabPanel("Modelling Information",
                                       box(title = h1("Linear Regression Model"),
                                           width = 4,
@@ -144,8 +145,125 @@ shinyUI(fluidPage(
                                              )
                                           )
                                       ),
+                             #Model fitting tab allowing for user input
                              tabPanel("Model Fitting",
+                                      fluidRow(
+                                        #Creating a column of width 3 to contain all user inputs for model fitting
+                                        column(width = 3,
+                                               box(
+                                                 title = h1("Model Fitting Options"),
+                                                 width=NULL, 
+                                                 solidHeader = TRUE,
+                                                 status = "primary",
+                                                 h4("Select your desired options below. When you have selected the options that you want for your models click on the button that says RUN ALL MODELS"),
+                                                 #Creating a slider input for proportion of data for training data set
+                                                 box(
+                                                   title = h1("Splitting Our Dataset"),
+                                                   width=NULL,
+                                                   solidHeader = TRUE,
+                                                   status = "primary",
+                                                   sliderInput(
+                                                     inputId = "split",
+                                                     label = "What percent of the dataset do you want to use to create your training data set? The remaining data will be used for the test data set",
+                                                     min = 1,
+                                                     max = 99,
+                                                     value = 15,
+                                                     post = "%")
+                                                   ),
+                                                 box(
+                                                   title = h1("Linear Model Variables"),
+                                                   width=NULL,
+                                                   solidHeader = TRUE,
+                                                   status = "primary",
+                                                   checkboxGroupInput(
+                                                     inputId = "lmVars",
+                                                     label = "Select all variables that you want to include in your linear model. If no variables are selected a linear model will be built using main effects for all variables with no interaction terms.",
+                                                     choices = names(modelVars)
+                                                     )
+                                                   ),
+                                                 box(
+                                                   title = h1("Regression Tree Model Variables"),
+                                                   width=NULL,
+                                                   solidHeader = TRUE,
+                                                   status = "primary",
+                                                   checkboxGroupInput(
+                                                     inputId = "treeVars",
+                                                     label = "Select all variables that you want to include in your regression tree model. If no variables are selected a regression tree model will be built using all variables.",
+                                                     choices = names(modelVars)
+                                                     )
+                                                   ),
+                                                 box(
+                                                   title = h1("Random Forest Model Variables"),
+                                                   width=NULL,
+                                                   solidHeader = TRUE,
+                                                   status = "primary",
+                                                   checkboxGroupInput(
+                                                     inputId = "forestVars",
+                                                     label = "Select all variables that you want to include in your random forest model. If no variables are selected a random forest model will be built using all variables.",
+                                                     choices = names(modelVars)
+                                                     )
+                                                   ),
+                                                 box(
+                                                   title = h1("Click the button to run all models"),
+                                                   width=NULL,
+                                                   solidHeader = TRUE,
+                                                   status = "primary",
+                                                   actionButton(
+                                                     inputId = "runModels",
+                                                     label = "RUN",
+                                                     icon = icon("person-running"),
+                                                     width = "100%"
+                                                     )
+                                                   )
+                                                 )
+                                               ),
+                                        column(width = 9,
+                                               box(
+                                                 title = h1("Model Comparison"),
+                                                 width = NULL,
+                                                 solidHeader = TRUE,
+                                                 status = "primary",
+                                                 box(
+                                                   title = "Table of Fit Statistics on Training Set",
+                                                   width = NULL,
+                                                   solidHeader = TRUE,
+                                                   status = "primary",
+                                                   dataTableOutput(
+                                                     outputId = "trainFitTable"
+                                                     )
+                                                   ),
+                                                 box(
+                                                   title = "Linear Model",
+                                                   width = NULL,
+                                                   solidHeader = TRUE,
+                                                   status = "primary"
+                                                 ),
+                                                 box(
+                                                   title = "Regression Tree Model",
+                                                   width = NULL,
+                                                   solidHeader = TRUE,
+                                                   status = "primary"
+                                                 ),
+                                                 box(
+                                                   title = "Random Forest Model",
+                                                   width = NULL,
+                                                   solidHeader = TRUE,
+                                                   status = "primary"
+                                                 ),
+                                                 box(
+                                                   title = "Table of Fit Statistics on Test Set",
+                                                   width = NULL,
+                                                   solidHeader = TRUE,
+                                                   status = "primary",
+                                                   dataTableOutput(
+                                                     outputId = "testFitTable"
+                                                     )
+                                                   )
+                                                 )
+                                               )
+                                        )
                                       ),
+                             #Prediction Tab allowing for user input of data values to predict
                              tabPanel("Prediction")
                              )
                            ),

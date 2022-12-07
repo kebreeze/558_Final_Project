@@ -14,7 +14,13 @@ groupings<- c("Age" = "Age_Group",
               "Report Year" = "mmwryear")
 
 
-
+modelVars<-c("Report Week" = "mmwrweek",
+             "Report Year" = "mmwryear",
+             "Jurisdiction" = "jurisdiction",
+             "Age" = "Age_Group",
+             "Total Deaths (All Causes)" = "Deaths_Total",
+             "Pneumonia Deaths" = "Pneumonia_Deaths",
+             "Influenza Deaths" = "Influenza_Deaths")
 
 
 
