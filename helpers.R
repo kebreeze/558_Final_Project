@@ -210,29 +210,29 @@ groupings[["Age"]]
 
 #################INTERACTIVE MAP###############################
   
-  mapStates<- map("state", fill = TRUE, plot = FALSE)
-
-baseMap<-leaflet(data = mapStates)%>%
-  addTiles()
-
-
-
-  leaflet(data = mapStates)%>%
-    addTiles() %>%
-    addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
-
-  
-  m = leaflet() %>% addTiles()
-  df = data.frame(
-    lat = rnorm(100),
-    lng = rnorm(100),
-    size = runif(100, 5, 20),
-    color = sample(colors(), 100)
-  )
-  m = leaflet(df) %>% addTiles()
-  m %>% addCircleMarkers(radius = ~size, color = ~color, fill = FALSE)
-  m %>% addCircleMarkers(radius = runif(100, 4, 10), color = c('red'))
-  
+#   mapStates<- map("state", fill = TRUE, plot = FALSE)
+# 
+# baseMap<-leaflet(data = mapStates)%>%
+#   addTiles()
+# 
+# 
+# 
+#   leaflet(data = mapStates)%>%
+#     addTiles() %>%
+#     addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
+# 
+#   
+#   m = leaflet() %>% addTiles()
+#   df = data.frame(
+#     lat = rnorm(100),
+#     lng = rnorm(100),
+#     size = runif(100, 5, 20),
+#     color = sample(colors(), 100)
+#   )
+#   m = leaflet(df) %>% addTiles()
+#   m %>% addCircleMarkers(radius = ~size, color = ~color, fill = FALSE)
+#   m %>% addCircleMarkers(radius = runif(100, 4, 10), color = c('red'))
+#   
   
   
   library(GGally)
@@ -249,14 +249,14 @@ baseMap<-leaflet(data = mapStates)%>%
   
 
 #################MODEL FITTING###############################
-#We are going to try to create a model to predict Covid_19_Deaths using variables that do not contain any information specific to covid deaths. We will also remove the Pneumonia_Or_Influenza_Deaths variable as it is highly correlated with other predictor variables for influenza and pneumonia deaths. Before we begin builidng the models we want to remove the variable "Pneumonia_Influenza_Or_Covid_Deaths" as well as removing NA values from the data set
+#We are going to try to create a model to predict Covid_19_Deaths using variables that do not contain any information specific to covid deaths. We will also remove the Pneumonia_Or_Influenza_Deaths variable as it is highly correlated with other predictor variables for influenza and pneumonia deaths. Before we begin builidng the models we want to remove the variable "Pneumonia_Influenza_Or_Covid_Deaths".
 
 Deaths_Model_Set<- Deaths_Data%>%
-    na.omit%>%
     select(!c(Pneumonia_Influenza_Or_Covid_Deaths,  Pneumonia_Or_Influenza_Deaths, Data_As_Of))
 
 
 ##########Creating a train and test set########################
+
     trainIndex<- createDataPartition(Deaths_Model_Set$Covid_19_Deaths, p = 0.15, list=FALSE)
   deathTrain<- Deaths_Model_Set[trainIndex,]
   deathTest<- Deaths_Model_Set[-trainIndex,]

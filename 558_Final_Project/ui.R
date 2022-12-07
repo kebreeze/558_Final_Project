@@ -13,7 +13,7 @@ library(shinyjs)
 shinyUI(fluidPage(
   dashboardPage(
     #Dashboard Title
-    dashboardHeader( title = "US Respiratory Illness Dashboard"),
+    dashboardHeader( title = app_title),
     #Define sidebar items
     dashboardSidebar(
       sidebarMenu(
@@ -29,7 +29,7 @@ shinyUI(fluidPage(
                 fluidRow(
                   #box to contain picture
                   box(
-                    title = h1("US Covid 19 Deaths Dashboard"),
+                    title = h1(app_title),
                     width = 12,
                     img(src="CDC_Flu_Gif.gif")),
                   #box to contain description of purpose
@@ -38,7 +38,7 @@ shinyUI(fluidPage(
                     width = 6,
                     solidHeader = TRUE,
                     status = "primary",
-                    h4("This will be a description of the purpose of the app")
+                    h4(app_purpose)
                     ),
                   #box to contain description of data
                   box(
@@ -46,12 +46,15 @@ shinyUI(fluidPage(
                     width = 6,
                     solidHeader = TRUE,
                     status = "primary",
-                    h4("Briefly discuss the data and its source - providing a link to more information about the data")
+                    h4(about_data)
                     ),
                   #box to contain description of purpose of each tab
                   box(
                     title = h1("Purpose of Each Page/Tab"),
-                    h4("Tell the user the purpose of each tab (page) of the app")
+                    width = 6,
+                    solidHeader = TRUE,
+                    status = "primary",
+                    h4(tab_purpose)
                     ),
                   ),
                 ),
@@ -127,22 +130,19 @@ shinyUI(fluidPage(
                                           width = 4,
                                           solidHeader = TRUE,
                                           status = "primary",
-                                          h4("You should explain these three modeling approaches,the benefits of each, and the drawbacks of each. You should include some type of math type in the explanation (you’ll need to include mathJax)."
-                                             )
+                                          h4(lm_info)
                                           ),
                                       box(title = h1("Tree Model"),
                                           width = 4,
                                           solidHeader = TRUE,
                                           status = "primary",
-                                          h4("You should explain these three modeling approaches, the benefits of each, and the drawbacks of each. You should include some type of math type in the explanation (you’ll need to include mathJax)."
-                                             )
+                                          h4(tree_info)
                                           ),
                                       box(title = h1("Random Forest Model"),
                                           width = 4,
                                           solidHeader = TRUE,
                                           status = "primary",
-                                          h4("You should explain these three modeling approaches, the benefits of each, and the drawbacks of each. You should include some type of math type in the explanation you’ll need to include mathJax)."
-                                             )
+                                          h4(rf_info)
                                           )
                                       ),
                              #Model fitting tab allowing for user input
@@ -155,7 +155,7 @@ shinyUI(fluidPage(
                                                  width=NULL, 
                                                  solidHeader = TRUE,
                                                  status = "primary",
-                                                 h4("Select your desired options below. When you have selected the options that you want for your models click on the button that says RUN ALL MODELS"),
+                                                 h4(model_options),
                                                  #Creating a slider input for proportion of data for training data set
                                                  box(
                                                    title = h1("Splitting Our Dataset"),
@@ -164,7 +164,7 @@ shinyUI(fluidPage(
                                                    status = "primary",
                                                    sliderInput(
                                                      inputId = "split",
-                                                     label = "What percent of the dataset do you want to use to create your training data set? The remaining data will be used for the test data set",
+                                                     label = data_split,
                                                      min = 1,
                                                      max = 99,
                                                      value = 15,
@@ -175,11 +175,17 @@ shinyUI(fluidPage(
                                                    width=NULL,
                                                    solidHeader = TRUE,
                                                    status = "primary",
-                                                   checkboxGroupInput(
-                                                     inputId = "lmVars",
-                                                     label = "Select all variables that you want to include in your linear model. If no variables are selected a linear model will be built using main effects for all variables with no interaction terms.",
-                                                     choices = names(modelVars)
-                                                     )
+                                                   varSelectInput(
+                                                     inputId = "lmVarNames",
+                                                     label = "Variables:",
+                                                     data = Deaths_Model_Set,
+                                                     multiple = TRUE
+                                                   )
+                                                   # checkboxGroupInput(
+                                                   #   inputId = "lmVars",
+                                                   #   label = "Select all variables that you want to include in your linear model. If no variables are selected a linear model will be built using main effects for all variables with no interaction terms.",
+                                                   #   choices = names(modelVars)
+                                                   #   )
                                                    ),
                                                  box(
                                                    title = h1("Regression Tree Model Variables"),
@@ -188,7 +194,7 @@ shinyUI(fluidPage(
                                                    status = "primary",
                                                    checkboxGroupInput(
                                                      inputId = "treeVars",
-                                                     label = "Select all variables that you want to include in your regression tree model. If no variables are selected a regression tree model will be built using all variables.",
+                                                     label = tree_vars,
                                                      choices = names(modelVars)
                                                      )
                                                    ),
@@ -199,7 +205,7 @@ shinyUI(fluidPage(
                                                    status = "primary",
                                                    checkboxGroupInput(
                                                      inputId = "forestVars",
-                                                     label = "Select all variables that you want to include in your random forest model. If no variables are selected a random forest model will be built using all variables.",
+                                                     label = rf_vars,
                                                      choices = names(modelVars)
                                                      )
                                                    ),

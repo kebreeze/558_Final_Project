@@ -18,9 +18,9 @@ shinyServer(function(input, output, session) {
     {get_summary(input$varDeath, input$groups)}, 
     class="cell-border stripe", 
     caption = as.character(input$varDeath)
-    )
-
-#Bar Plots based on user inputs
+  )
+  
+  #Bar Plots based on user inputs
   output$barPlot<- renderPlot(
     {get_bar_plot(input$varDeathBar, input$barplotType)})
   
@@ -31,17 +31,17 @@ shinyServer(function(input, output, session) {
       addTiles() %>%
       addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
   })
-    # output$distPlot <- renderPlot({
-    # 
-    #     # generate bins based on input$bins from ui.R
-    #     x    <- faithful[, 2]
-    #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    # 
-    #     # draw the histogram with the specified number of bins
-    #     hist(x, breaks = bins, col = 'darkgray', border = 'white',
-    #          xlab = 'Waiting time to next eruption (in mins)',
-    #          main = 'Histogram of waiting times')
-    # 
-    # })
-
+  # output$distPlot <- renderPlot({
+  # 
+  #     # generate bins based on input$bins from ui.R
+  #     x    <- faithful[, 2]
+  #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
+  # 
+  #     # draw the histogram with the specified number of bins
+  #     hist(x, breaks = bins, col = 'darkgray', border = 'white',
+  #          xlab = 'Waiting time to next eruption (in mins)',
+  #          main = 'Histogram of waiting times')
+  # 
+  # })
+  
 })

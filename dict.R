@@ -22,6 +22,13 @@ modelVars<-c("Report Week" = "mmwrweek",
              "Pneumonia Deaths" = "Pneumonia_Deaths",
              "Influenza Deaths" = "Influenza_Deaths")
 
+# summaryCheckBox<-c("Minimum Deaths Per Week" = "Min=min(.data[[death_variable]])",
+#                    "Q1 Deaths Per Week" = "Q1 = quantile(.data[[death_variable]], 0.25)",
+#                    "Median Deaths Per Week" = "Median = median(.data[[death_variable]])",
+#                    "Mean Deaths Per Week" = "Mean Deaths Per Week = round(mean(.data[[death_variable]]))",
+#                    "Q3 Deaths Per Week" = "Q3 = quantile(.data[[death_variable]], 0.75)",
+#                    "Maximum Deaths Per Week" = "Maximum = max(.data[[death_variable]])",
+#                    "Count" = "Count = n()")
 
 
 
