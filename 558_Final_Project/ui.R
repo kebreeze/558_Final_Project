@@ -13,7 +13,7 @@ library(shinyjs)
 shinyUI(fluidPage(
   dashboardPage(
     #Dashboard Title
-    dashboardHeader( title = app_title),
+    dashboardHeader( title = app_title_text),
     #Define sidebar items
     dashboardSidebar(
       sidebarMenu(
@@ -29,16 +29,16 @@ shinyUI(fluidPage(
                 fluidRow(
                   #box to contain picture
                   box(
-                    title = h1(app_title),
+                    title = h1(app_title_text),
                     width = 12,
                     img(src="CDC_Flu_Gif.gif")),
                   #box to contain description of purpose
                   box(
-                    title = h1("Purpose of This App"),
+                    title = h1("Pursose of this App"),
                     width = 6,
                     solidHeader = TRUE,
                     status = "primary",
-                    h4(app_purpose)
+                    h4(app_purpose_text)
                     ),
                   #box to contain description of data
                   box(
@@ -46,15 +46,15 @@ shinyUI(fluidPage(
                     width = 6,
                     solidHeader = TRUE,
                     status = "primary",
-                    h4(about_data)
+                    h4(about_data_text)
                     ),
                   #box to contain description of purpose of each tab
                   box(
-                    title = h1("Purpose of Each Page/Tab"),
+                    title = h1("Purpose of Each Tab"),
                     width = 6,
                     solidHeader = TRUE,
                     status = "primary",
-                    h4(tab_purpose)
+                    h4(tab_purpose_text)
                     ),
                   ),
                 ),
@@ -104,19 +104,20 @@ shinyUI(fluidPage(
                                         width=NULL, 
                                         solidHeader = TRUE,
                                         status = "primary",
-                                        dataTableOutput("summary")
+                                        dataTableOutput("summary")%>%
+                                          withSpinner()
                                         ),
                                     box(title = "Bar Graph",
                                         width=NULL, 
                                         solidHeader = TRUE,
                                         status = "primary",
-                                        plotOutput("barPlot")
+                                        plotOutput("barPlot")%>%
+                                          withSpinner(hide.ui = FALSE)
                                         ),
-                                    box(title = "Map",
+                                    box(title = "Scatter Plot",
                                         width=NULL, 
                                         solidHeader = TRUE,
                                         status = "primary",
-                                        leafletOutput("mymap")
                                         )
                                     )
                              )
@@ -130,86 +131,86 @@ shinyUI(fluidPage(
                                           width = 4,
                                           solidHeader = TRUE,
                                           status = "primary",
-                                          h4(lm_info)
+                                          withMathJax(helpText("Linear regression provides a relatively simple way to predict a quantitative response. In a simple linear regression we use a single predictor $X$ to predict a response $Y$. In a simple linear model we have two unknown constants, $Beta_0$ represents the intercept and $Beta_1$ represents the slope. $Beta_0$ is the expected value of $Y$ when $X=0$. $Beta_1$ is the average change in $Y$ that is associated with an increase of one-unit of $X$. In linear regression we use our training data to produce estimated values for $Beta_0$ and $Beta_1$ which can then be used to make predictions on our test data.")),
+                                          withMathJax(helpText("Some math here $$\\alpha+\\beta$$"))
                                           ),
                                       box(title = h1("Tree Model"),
                                           width = 4,
                                           solidHeader = TRUE,
                                           status = "primary",
-                                          h4(tree_info)
+                                          h4(tree_info_text)
                                           ),
                                       box(title = h1("Random Forest Model"),
                                           width = 4,
                                           solidHeader = TRUE,
                                           status = "primary",
-                                          h4(rf_info)
+                                          h4(rf_info_text)
                                           )
                                       ),
                              #Model fitting tab allowing for user input
                              tabPanel("Model Fitting",
                                       fluidRow(
                                         #Creating a column of width 3 to contain all user inputs for model fitting
-                                        column(width = 3,
+                                        column(width = 4,
                                                box(
-                                                 title = h1("Model Fitting Options"),
+                                                 title = h2("Model Fitting Options"),
                                                  width=NULL, 
                                                  solidHeader = TRUE,
                                                  status = "primary",
-                                                 h4(model_options),
+                                                 h4(model_options_text),
                                                  #Creating a slider input for proportion of data for training data set
                                                  box(
-                                                   title = h1("Splitting Our Dataset"),
+                                                   title = "Splitting Our Dataset",
                                                    width=NULL,
                                                    solidHeader = TRUE,
                                                    status = "primary",
+                                                   data_split_text,
                                                    sliderInput(
                                                      inputId = "split",
-                                                     label = data_split,
+                                                     label = "Percent to Use in Training",
                                                      min = 1,
                                                      max = 99,
                                                      value = 15,
                                                      post = "%")
                                                    ),
                                                  box(
-                                                   title = h1("Linear Model Variables"),
+                                                   title = "Linear Model Variables",
                                                    width=NULL,
                                                    solidHeader = TRUE,
                                                    status = "primary",
+                                                   lm_vars_text,
                                                    checkboxGroupInput(
                                                      inputId = "lmVarNames",
-                                                     label = "Variables:",
+                                                     label = "Select Variables for MLR Model",
                                                      choices = names(modelVars)
-                                                   )
-                                                   # checkboxGroupInput(
-                                                   #   inputId = "lmVars",
-                                                   #   label = "Select all variables that you want to include in your linear model. If no variables are selected a linear model will be built using main effects for all variables with no interaction terms.",
-                                                   #   choices = names(modelVars)
-                                                   #   )
+                                                     )
                                                    ),
                                                  box(
-                                                   title = h1("Regression Tree Model Variables"),
+                                                   title = "Regression Tree Model Variables",
                                                    width=NULL,
                                                    solidHeader = TRUE,
                                                    status = "primary",
+                                                   tree_vars_text,
                                                    checkboxGroupInput(
                                                      inputId = "treeVars",
-                                                     label = tree_vars,
+                                                     label = "Select Variables for Regression Tree Model",
                                                      choices = names(modelVars)
                                                      )
                                                    ),
                                                  box(
-                                                   title = h1("Random Forest Model Variables"),
+                                                   title = "Random Forest Model Variables",
                                                    width=NULL,
                                                    solidHeader = TRUE,
                                                    status = "primary",
+                                                   rf_vars_text,
                                                    checkboxGroupInput(
                                                      inputId = "forestVars",
-                                                     label = rf_vars,
+                                                     label = "Select Variables for Regression Tree Model",
                                                      choices = names(modelVars)
                                                      )
                                                    ),
                                                  box(
-                                                   title = h1("Click the button to run all models"),
+                                                   title = "Click the button to run all models",
                                                    width=NULL,
                                                    solidHeader = TRUE,
                                                    status = "primary",
@@ -222,9 +223,9 @@ shinyUI(fluidPage(
                                                    )
                                                  )
                                                ),
-                                        column(width = 9,
+                                        column(width = 8,
                                                box(
-                                                 title = h1("Model Comparison"),
+                                                 title = h2("Model Comparison"),
                                                  width = NULL,
                                                  solidHeader = TRUE,
                                                  status = "primary",
@@ -241,7 +242,9 @@ shinyUI(fluidPage(
                                                    title = "Linear Model",
                                                    width = NULL,
                                                    solidHeader = TRUE,
-                                                   status = "primary"
+                                                   status = "primary",
+                                                   dataTableOutput(
+                                                     outputId = "selected_lm")
                                                  ),
                                                  box(
                                                    title = "Regression Tree Model",
@@ -272,11 +275,40 @@ shinyUI(fluidPage(
                              tabPanel("Prediction")
                              )
                            ),
-                  tabPanel("Data Page")
+                  tabPanel("Data Page",
+                           fluidRow(
+                             column(width = 3,
+                                    box(
+                                      title = "View, Subset and Download the Data",
+                                      width = NULL,
+                                      solidHeader = TRUE,
+                                      status = "primary",
+                                      
+                                      downloadButton(
+                                        outputId = "download"
+                                      )
+                                      ),
+                                    ),
+                             column(width = 9,
+                                    # dataTableOutput(
+                                    #   outputId = "CDCdataset",
+                                    #   width = "95%")
+                                    box(
+                                      title = "CDC Covid Deaths Dataset",
+                                      width = NULL,
+                                      solidHeader = TRUE,
+                                      status = "primary",
+                                      dataTableOutput(
+                                        outputId = "CDCdataset"
+                                        )
+                                      )
+                                    )
+                             )
+                           )
                   )
                 )
         )
       )
     )
   )
-  )
+)

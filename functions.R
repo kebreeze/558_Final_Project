@@ -11,7 +11,7 @@ library(rpart)
 library(randomForest)
 library(caret)
 
-#This will return the latest data from the CDC's API containing information on Covid 19 deaths. This code will return up to 50,000 observations from the dataset.
+#This will return the latest data from the CDC's API containing information on Covid 19 deaths. This code will return up to 50,000 observations from the dataset. This code will be run once when a user accesses the app, which will allow the dataset to be retrieved from the CDC's API
 get_covid_data<- function(){
   apiToken<-Sys.getenv("apiToken")#Accessing API KEY stored in .Renviron
   baseURL<-Sys.getenv("baseURL")#Accessing baseURL stored in .Renviron
@@ -43,8 +43,20 @@ get_covid_data<- function(){
   return(covid_clean_Data)
 }
 
+#Store the results of get_covid_data() function in a tibble named Deaths_Data
 Deaths_Data<-get_covid_data()
 
+####Creating a dataset for later model building##############
+#We are going to create a model to predict Covid_19_Deaths using variables that do not contain any information specific to covid deaths(Pneumonia_Influenza_Or_Covid_Deaths). We will also remove the Pneumonia_Or_Influenza_Deaths variable as it is highly correlated with other predictor variables for influenza and pneumonia deaths. 
+
+create_model_dataset<-function(deathsDatasetFull){
+  deathsDatasetFull%>%
+    select(!c(Pneumonia_Influenza_Or_Covid_Deaths,  
+              Pneumonia_Or_Influenza_Deaths, Data_As_Of))
+}
+
+#Store the results of create_model_dataset in a tibble named Deaths_Model_Data that will be used in the model building stage
+Deaths_Model_Set<-create_model_dataset(Deaths_Data)
 
 
 ########################Data Exploration Code###########################
@@ -98,7 +110,7 @@ Deaths_Data<-get_covid_data()
 # create_summaries(summaries_requested = "Minimum Deaths Per Week", summary_variable="Covid 19 Deaths")
 
 #getSummary will return summary statistics based on user input for summary_variable and grouping.
-get_summary<- function(summary_variable, groups_by){
+create_summary<- function(summary_variable, groups_by){
   
   #Allowing user input for variable to use for summary data. CDCvars is a dictionary of key value pairs saved in dict.R 
   death_variable<-
@@ -147,7 +159,7 @@ get_summary<- function(summary_variable, groups_by){
 
 ###############get_bar_plot() function
 
-get_bar_plot<- function(variable, TypeOfBar){
+create_bar_plot<- function(variable, TypeOfBar){
   #Allowing user input for variable to use for bar graph. CDCvars is a dictionary of key value pairs saved in dict.R 
   death_variable<-
     CDCvars[variable]
@@ -265,41 +277,64 @@ get_bar_plot<- function(variable, TypeOfBar){
 
 
 #################MODEL FITTING###############################
-#We are going to try to create a model to predict Covid_19_Deaths using variables that do not contain any information specific to covid deaths. We will also remove the Pneumonia_Or_Influenza_Deaths variable as it is highly correlated with other predictor variables for influenza and pneumonia deaths. Before we begin builidng the models we want to remove the variable "Pneumonia_Influenza_Or_Covid_Deaths".
 
-  Deaths_Model_Set<- Deaths_Data%>%
-   select(!c(Pneumonia_Influenza_Or_Covid_Deaths,  Pneumonia_Or_Influenza_Deaths, Data_As_Of))
 
 
 ##########Creating a train and test set########################
-split<-function(p){
-  trainIndex<- createDataPartition(Deaths_Model_Set$Covid_19_Deaths, p = percent, list=FALSE)
-  deathTrain<- Deaths_Model_Set[trainIndex,]
-  deathTest<- Deaths_Model_Set[-trainIndex,]
-  deathList<-list(deathTrain=deathTrain, deathTest=deathTest)
-  return(deathList)
+#Split the data to create trainIndex
+create_split<-function(percent){
+  trainIndex<- createDataPartition(Deaths_Model_Set$Covid_19_Deaths, p = percent/100, list=FALSE)
   }
-# # 
 
-# 
- # 
+#trainIndex<-create_split(15)
+
+#Create train set
+create_train_set<-function(Deaths_Model_Set, trainIndex){
+  deathTrain<- Deaths_Model_Set[trainIndex,]
+}
+
+#trainSet<-create_train_set(Deaths_Model_Set, trainIndex)
+#Create test set
+create_test_set<-function(Deaths_Model_Set, trainIndex){
+  deathTest<- Deaths_Model_Set[-trainIndex,]
+}
+
+#testSet<-create_test_set(Deaths_Model_Set, trainIndex)
 # 
 # #############MLR Model#####################
 # 
-# MLRmodel<- train(Covid_19_Deaths ~ ., data=split$deathTrain,
-#                  method = "lm",
-#                  trControl = trainControl(method = "cv"))
 # 
 # MLRmodel
 # 
 # ######MLR Function for server use
-# # create_MLR<-function(lmvarinput){
-# #   MLRmodel<- train(Covid_19_Deaths ~ , data=split$deathTrain,
-# #                    method = "lm",
-# #                    trControl = trainControl(method = "cv"))
-# # }
-# 
-# 
+create_MLR<-function(varsSelected=NULL, trainingData){
+  chosenVars<-
+   modelVars[varsSelected]
+  
+  responseVar<- "Covid_19_Deaths"
+  predictorVars<- c(chosenVars)
+  #creating formulas based on user input. If user does not input variables the model will be built using all variables by default.
+  formulaVar<-
+    if(is.null(varsSelected)){
+      as.formula(Covid_19_Deaths ~ .)
+    } else {
+      as.formula(paste(responseVar, paste(predictorVars, collapse = " + "), sep = " ~ "))
+    }
+  
+  MLRmodel<- train(formulaVar, 
+                   data=trainingData,
+                   method = "lm",
+                   trControl = trainControl(method = "cv"))
+  return(MLRmodel)
+}
+
+modelVars
+# # 
+lmA<-create_MLR(trainingData=d)
+
+lmA$results
+
+DT::datatable(lmA$results)
 # 
 # ##################Tibble for comparing fit stats on training set
 # 

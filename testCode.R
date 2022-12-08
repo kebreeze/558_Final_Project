@@ -5,8 +5,8 @@ library(geojsonio)
 library(geojsonlint)
 library(leaflet) 
 
-
-
+lmAsummary<-summary(lmA)
+table(lmAsummary)
 
 ## Install the required package with:
 ## install.packages("RSocrata")

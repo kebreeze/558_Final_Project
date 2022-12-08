@@ -27,41 +27,50 @@ library(caret)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
-  #Summary data tables based on user inputs
+  #########Data Exploration Page Code###########
+  ##Summary data tables based on user inputs##
   output$summary<- DT::renderDataTable(
-    {get_summary(input$varDeath, input$groups)}, 
+    {create_summary(input$varDeath, input$groups)}, 
     class="cell-border stripe", 
     caption = as.character(input$varDeath)
   )
   
-  #Bar Plots based on user inputs
+  ##Bar Plots based on user inputs##
   output$barPlot<- renderPlot(
-    {get_bar_plot(input$varDeathBar, input$barplotType)})
+    {create_bar_plot(input$varDeathBar, input$barplotType)})
   
-  output$mymap<- renderLeaflet({
-    mapStates<- map("state", fill = TRUE, plot = FALSE)
-    
-    leaflet(data = mapStates)%>%
-      addTiles() %>%
-      addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
-  })
-  # output$distPlot <- renderPlot({
-  # 
-  #     # generate bins based on input$bins from ui.R
-  #     x    <- faithful[, 2]
-  #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
-  # 
-  #     # draw the histogram with the specified number of bins
-  #     hist(x, breaks = bins, col = 'darkgray', border = 'white',
-  #          xlab = 'Waiting time to next eruption (in mins)',
-  #          main = 'Histogram of waiting times')
-  # 
-  # })
+
+  
+  ##########Model Fitting Page Code################
+  ##User input for variables and actionButton##
   observeEvent(input$runModels,{
-    print(input$split)
+    #create index, train and test sets based on user input for percentage to include in the training set
+    trainIndex<-create_split(input$split)
+    trainSet<-create_train_set(Deaths_Model_Set, trainIndex)
+    testSet<-create_test_set(Deaths_Model_Set,trainIndex)
     
-    print(input$lmVarNames)
-    print(input$treeVars)
-    print(paste((input$forestVars), collapse = "+"))
+    MLRmodel<-create_MLR(input$lmVarNames, trainSet)
+
+    output$selected_lm<- DT::renderDataTable(
+      (MLRmodel$results)
+    )
+#    (input$lmVarNames)
+    # print(input$treeVars)
+    # print(paste((input$forestVars), collapse = "+"))
   })
+  # output$selected_lm<- renderText({
+  #   paste("You have selected", input$lmVarNames) 
+  # })
+  
+  #########Data Page Code########################
+  ##Allow users to scroll through dataset
+  output$CDCdataset<- DT::renderDataTable(
+    Deaths_Data,
+    options = list(scrollX=TRUE)
+  )
+  #Allow users to download the dataset
+  output$download<- downloadHandler(
+    filename = function(){paste("CDC_Covid_Deaths", Sys.Date(), ".csv", sep = "")},
+    content = function(file){write.csv(Deaths_Data, file)}
+    )
 })
