@@ -175,11 +175,10 @@ shinyUI(fluidPage(
                                                    width=NULL,
                                                    solidHeader = TRUE,
                                                    status = "primary",
-                                                   varSelectInput(
+                                                   checkboxGroupInput(
                                                      inputId = "lmVarNames",
                                                      label = "Variables:",
-                                                     data = Deaths_Model_Set,
-                                                     multiple = TRUE
+                                                     choices = names(modelVars)
                                                    )
                                                    # checkboxGroupInput(
                                                    #   inputId = "lmVars",

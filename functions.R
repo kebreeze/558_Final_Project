@@ -52,27 +52,27 @@ Deaths_Data<-get_covid_data()
 ##############Numerical Summaries
 
 #The create_summaries() function will take in a character vector of desired summaries that the user requests and return the appropriate values.
-create_summaries<-function(summaries_requested, summary_variable, groups_by){
+#create_summaries<-function(summaries_requested, summary_variable, groups_by){
   #Allowing user input for variable to use for summary data. CDCvars is a dictionary of key value pairs saved in dict.R 
-  death_variable<-
-    CDCvars[summary_variable]
+#  death_variable<-
+#    CDCvars[summary_variable]
 
   #Allowing user input for how to group summary data. groupings is a dictionary of key value pairs saved in dict.R
-  group_summary_by<-
-    groupings[groups_by]
+#  group_summary_by<-
+#    groupings[groups_by]
   
 #  sumDF<-as_tibble()
 
-    for (variable in summaries_requested){
-      if(variable=="Minimum Deaths Per Week"){
-        Minimum<- Deaths_Data%>%
-          summarize("Minimum Deaths Per Week" = min(.data[[death_variable]]))
-      } else {
-        print("not minimum")
-      }
-      # sumType<- summaryCheckBox[[variable]]
-      # sumVec<- c(sumVec, sumType)}
-    } 
+#    for (variable in summaries_requested){
+#      if(variable=="Minimum Deaths Per Week"){
+    #     Minimum<- Deaths_Data%>%
+    #       summarize("Minimum Deaths Per Week" = min(.data[[death_variable]]))
+    #   } else {
+    #     print("not minimum")
+    #   }
+    #   # sumType<- summaryCheckBox[[variable]]
+    #   # sumVec<- c(sumVec, sumType)}
+    # } 
 #  checkbox<-paste(sumVec, collapse = ", ")
   # summary_data<- 
   #   #Allowing user to see overall summary by selecting "All Groups".
@@ -89,13 +89,13 @@ create_summaries<-function(summaries_requested, summary_variable, groups_by){
   #       summarize(.data, checkbox)
   #   }
    #return(checkbox)
-}
+#}
 
 # create_summaries(summaries_requested = sumVec)
-summaryCheckBox[["Minimum Deaths Per Week"]]
+# summaryCheckBox[["Minimum Deaths Per Week"]]
 
-sumVec<-c("Minimum Deaths Per Week", "Q1 Deaths Per Week")
-create_summaries(summaries_requested = "Minimum Deaths Per Week", summary_variable="Covid 19 Deaths")
+# sumVec<-c("Minimum Deaths Per Week", "Q1 Deaths Per Week")
+# create_summaries(summaries_requested = "Minimum Deaths Per Week", summary_variable="Covid 19 Deaths")
 
 #getSummary will return summary statistics based on user input for summary_variable and grouping.
 get_summary<- function(summary_variable, groups_by){
@@ -267,24 +267,22 @@ get_bar_plot<- function(variable, TypeOfBar){
 #################MODEL FITTING###############################
 #We are going to try to create a model to predict Covid_19_Deaths using variables that do not contain any information specific to covid deaths. We will also remove the Pneumonia_Or_Influenza_Deaths variable as it is highly correlated with other predictor variables for influenza and pneumonia deaths. Before we begin builidng the models we want to remove the variable "Pneumonia_Influenza_Or_Covid_Deaths".
 
- Deaths_Model_Set<- Deaths_Data%>%
+  Deaths_Model_Set<- Deaths_Data%>%
    select(!c(Pneumonia_Influenza_Or_Covid_Deaths,  Pneumonia_Or_Influenza_Deaths, Data_As_Of))
 
 
 ##########Creating a train and test set########################
-# data_split<-function(percent){
-#   trainIndex<- createDataPartition(Deaths_Model_Set$Covid_19_Deaths, p = percent/100, list=FALSE)
-#   deathTrain<- Deaths_Model_Set[trainIndex,]
-#   deathTest<- Deaths_Model_Set[-trainIndex,]
-#   
-#   return(list(deathTrain=deathTrain, deathTest=deathTest))
-# }
+split<-function(p){
+  trainIndex<- createDataPartition(Deaths_Model_Set$Covid_19_Deaths, p = percent, list=FALSE)
+  deathTrain<- Deaths_Model_Set[trainIndex,]
+  deathTest<- Deaths_Model_Set[-trainIndex,]
+  deathList<-list(deathTrain=deathTrain, deathTest=deathTest)
+  return(deathList)
+  }
+# # 
+
 # 
-# 
-# 
-# split<-data_split(10)
-# split[1]
-# 
+ # 
 # 
 # #############MLR Model#####################
 # 

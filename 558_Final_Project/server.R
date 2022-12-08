@@ -7,9 +7,23 @@
 #    http://shiny.rstudio.com/
 #
 
+library(jsonlite)
+library(tidyverse)
 library(shiny)
+library(shinydashboard)
+library(shinycssloaders)
+library(plotly)
+library(htmltools)
+library(DT)
+library(shinyjs)
+library(rpart)
+library(randomForest)
+library(caret)
 
-
+# source(".Renviron")
+# source("text.R")
+# source("dict.R")
+# source("functions.R")
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
@@ -45,6 +59,7 @@ shinyServer(function(input, output, session) {
   # })
   observeEvent(input$runModels,{
     print(input$split)
+    
     print(input$lmVarNames)
     print(input$treeVars)
     print(paste((input$forestVars), collapse = "+"))
