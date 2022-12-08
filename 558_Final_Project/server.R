@@ -43,5 +43,10 @@ shinyServer(function(input, output, session) {
   #          main = 'Histogram of waiting times')
   # 
   # })
-  
+  observeEvent(input$runModels,{
+    print(input$split)
+    print(input$lmVarNames)
+    print(input$treeVars)
+    print(paste((input$forestVars), collapse = "+"))
+  })
 })
