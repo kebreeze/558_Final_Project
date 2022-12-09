@@ -44,16 +44,35 @@ shinyServer(function(input, output, session) {
   ##########Model Fitting Page Code################
   ##User input for variables and actionButton##
   observeEvent(input$runModels,{
+    
     #create index, train and test sets based on user input for percentage to include in the training set
     trainIndex<-create_split(input$split)
     trainSet<-create_train_set(Deaths_Model_Set, trainIndex)
     testSet<-create_test_set(Deaths_Model_Set,trainIndex)
-    
+    #create models based on user input
     MLRmodel<-create_MLR(input$lmVarNames, trainSet)
-
+    treeModel<-create_tree(input$treeVars, trainSet)
+    rfModel<-create_forest(input$forestVars, trainSet)
+    #create tables of fit stats and plots for our models
+    #fit for MLR model
     output$selected_lm<- DT::renderDataTable(
       (MLRmodel$results)
     )
+    #fit for regression tree model
+    output$selected_tree<- DT::renderDataTable(
+      (treeModel$results)
+    )
+    output$tree_plot<- renderPlot({
+      plot(treeModel)
+    })
+    #fit for forest model
+    output$selected_forest<- DT::renderDataTable(
+      (rfModel$results)
+    )
+    
+    output$testFitTable<- DT::renderDataTable({
+      create_test_stats(MLRmodel, testSet)
+    })
 #    (input$lmVarNames)
     # print(input$treeVars)
     # print(paste((input$forestVars), collapse = "+"))

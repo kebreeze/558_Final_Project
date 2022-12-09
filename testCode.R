@@ -5,9 +5,17 @@ library(geojsonio)
 library(geojsonlint)
 library(leaflet) 
 
-lmAsummary<-summary(lmA)
-table(lmAsummary)
+table(lmTS)
+lmTS<-create_test_stats(lmA, ts)
 
+lmA<-create_MLR(trainingData = tr)
+
+s<-create_split(15)
+tr<-create_train_set(Deaths_Model_Set, s)
+ts<-create_test_set(Deaths_Model_Set, s)
+
+lmAPred<-predict(lmA, ts)
+postResample(lmAPred, obs = ts$Covid_19_Deaths)
 ## Install the required package with:
 ## install.packages("RSocrata")
 

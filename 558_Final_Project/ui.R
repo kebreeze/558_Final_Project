@@ -218,8 +218,7 @@ shinyUI(fluidPage(
                                                      inputId = "runModels",
                                                      label = "RUN",
                                                      icon = icon("person-running"),
-                                                     width = "100%"
-                                                     )
+                                                     width = "100%")
                                                    )
                                                  )
                                                ),
@@ -235,8 +234,7 @@ shinyUI(fluidPage(
                                                    solidHeader = TRUE,
                                                    status = "primary",
                                                    dataTableOutput(
-                                                     outputId = "trainFitTable"
-                                                     )
+                                                     outputId = "trainFitTable")
                                                    ),
                                                  box(
                                                    title = "Linear Model",
@@ -245,19 +243,25 @@ shinyUI(fluidPage(
                                                    status = "primary",
                                                    dataTableOutput(
                                                      outputId = "selected_lm")
-                                                 ),
+                                                   ),
                                                  box(
                                                    title = "Regression Tree Model",
                                                    width = NULL,
                                                    solidHeader = TRUE,
-                                                   status = "primary"
-                                                 ),
+                                                   status = "primary",
+                                                   dataTableOutput(
+                                                     outputId = "selected_tree"),
+                                                   plotOutput(
+                                                     outputId = "tree_plot")
+                                                   ),
                                                  box(
                                                    title = "Random Forest Model",
                                                    width = NULL,
                                                    solidHeader = TRUE,
-                                                   status = "primary"
-                                                 ),
+                                                   status = "primary",
+                                                   dataTableOutput(
+                                                     outputId = "selected_forest")
+                                                   ),
                                                  box(
                                                    title = "Table of Fit Statistics on Test Set",
                                                    width = NULL,

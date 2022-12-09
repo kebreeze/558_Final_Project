@@ -22,6 +22,14 @@ modelVars<-c("Report Week" = "mmwrweek",
              "Pneumonia Deaths" = "Pneumonia_Deaths",
              "Influenza Deaths" = "Influenza_Deaths")
 
+sumFormulas<-c("Minimum Deaths Per Week" = as.formula("Minimum Deaths Per Week" = min(.data[[death_variable]])),
+               # "Q1 Deaths Per Week" = quantile(.data[[death_variable]], 0.25),
+               # "Median Deaths Per Week" = median(.data[[death_variable]]),
+               # "Mean Deaths Per Week" = round(mean(.data[[death_variable]])),
+               # "Q3 Deaths Per Week" = quantile(.data[[death_variable]], 0.75),
+               # "Maximum Deaths Per Week" = max(.data[[death_variable]]),
+               "Count" = as.formula("Count" = n()))
+
 varLabels<-c("Covid 19 Deaths" = "Covid_19_Deaths" ,
              "Total Deaths (All Causes)" = "Deaths_Total",
              "Pneumonia Deaths" = "Pneumonia_Deaths",
