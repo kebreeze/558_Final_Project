@@ -5,6 +5,23 @@ library(geojsonio)
 library(geojsonlint)
 library(leaflet) 
 
+atree<-create_tree(trainingData=b)
+
+treeMV<-atree[["terms"]][[3]]
+
+charTreeMV<-as.character(treeMV)
+
+
+
+
+strsplit(as.character(treeMV), "+")
+
+str(treeMV)
+
+print(treeMV)
+
+summary(lmA)
+
 table(lmTS)
 lmTS<-create_test_stats(lmA, ts)
 

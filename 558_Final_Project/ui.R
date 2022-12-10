@@ -9,8 +9,27 @@ library(DT)
 library(shinyjs)
 
 
+
+generateBox <- function(title, status="primary", inputId, label) {
+  headerBox <- box(
+    title = title,
+    width = NULL,
+    solidHeader = TRUE,
+    status = status,
+    lm_vars_text,
+    checkboxGroupInput(
+      inputId = inputId,
+      label = label,
+      choices = names(modelVars)
+    )
+  )
+  
+  return (headerBox)
+}
+
 # Define UI for application that displays an about page, a data exploration page, a modeling page (with 3 tabs), and a data page.
 shinyUI(fluidPage(
+  withMathJax(),
   dashboardPage(
     #Dashboard Title
     dashboardHeader( title = app_title_text),
@@ -55,8 +74,8 @@ shinyUI(fluidPage(
                     solidHeader = TRUE,
                     status = "primary",
                     h4(tab_purpose_text)
-                    ),
-                  ),
+                    )
+                  )
                 ),
         #App layout
         tabItem(tabName = "app",
@@ -71,7 +90,7 @@ shinyUI(fluidPage(
                                         status = "primary",
                                         selectInput("varDeath", 
                                                     label = "Variable to Summarize",
-                                                    choices = names(CDCvars),
+                                                    choices = names(CDCvars)
                                                     ),
                                         radioButtons("groups",
                                                      "Select Variable to Group Summaries By Or Choose to Look at Overall Summary Data for All Groups",
@@ -85,14 +104,14 @@ shinyUI(fluidPage(
                                             h4 = "You can create bar plots based on the variable",
                                             selectInput("varDeathBar", 
                                                         label = "Variable to Plot",
-                                                        choices = names(CDCvars),
+                                                        choices = names(CDCvars)
                                                         ),
                                             radioButtons("barplotType",
                                                          "Select Plot Type",
                                                          choices = c("By Year Only", "By Age Only", "By Year Grouped By Age", "By Age Grouped By Year")
                                                          )
                                             ),
-                                        box(title = "Map Options",
+                                        box(title = "Scatter Plot Options",
                                             width=NULL, 
                                             solidHeader = TRUE,
                                             status = "primary")
@@ -118,6 +137,7 @@ shinyUI(fluidPage(
                                         width=NULL, 
                                         solidHeader = TRUE,
                                         status = "primary",
+                                        plotOutput("scatterPlot")
                                         )
                                     )
                              )
@@ -126,13 +146,13 @@ shinyUI(fluidPage(
                   tabPanel("Modeling Page",
                            tabsetPanel(
                              #Modelling info tab
-                             tabPanel("Modelling Information",
+                             tabPanel("Modeling Information",
                                       box(title = h1("Linear Regression Model"),
                                           width = 4,
                                           solidHeader = TRUE,
                                           status = "primary",
-                                          withMathJax(helpText("Linear regression provides a relatively simple way to predict a quantitative response. In a simple linear regression we use a single predictor $X$ to predict a response $Y$. In a simple linear model we have two unknown constants, $Beta_0$ represents the intercept and $Beta_1$ represents the slope. $Beta_0$ is the expected value of $Y$ when $X=0$. $Beta_1$ is the average change in $Y$ that is associated with an increase of one-unit of $X$. In linear regression we use our training data to produce estimated values for $Beta_0$ and $Beta_1$ which can then be used to make predictions on our test data.")),
-                                          withMathJax(helpText("Some math here $$\\alpha+\\beta$$"))
+                                          helpText("Linear regression provides a relatively simple way to predict a quantitative response. In a simple linear regression we use a single predictor $$X$$ to predict a response $Y$. In a simple linear model we have two unknown constants, $Beta_0$ represents the intercept and $Beta_1$ represents the slope. $Beta_0$ is the expected value of $Y$ when $X=0$. $Beta_1$ is the average change in $Y$ that is associated with an increase of one-unit of $X$. In linear regression we use our training data to produce estimated values for $Beta_0$ and $Beta_1$ which can then be used to make predictions on our test data. $$\\alpha+\\beta$$"),
+                                          helpText("Some math here $$\\alpha+\\beta$$")
                                           ),
                                       box(title = h1("Tree Model"),
                                           width = 4,
@@ -185,6 +205,11 @@ shinyUI(fluidPage(
                                                      choices = names(modelVars)
                                                      )
                                                    ),
+                                                 generateBox(
+                                                   title="Testbox",
+                                                   inputId="testInput",
+                                                   label="Testlabel"
+                                                 ),
                                                  box(
                                                    title = "Regression Tree Model Variables",
                                                    width=NULL,
@@ -275,8 +300,78 @@ shinyUI(fluidPage(
                                                )
                                         )
                                       ),
-                             #Prediction Tab allowing for user input of data values to predict
-                             tabPanel("Prediction")
+                             #Prediction Tab allowing for user input of data values to predict for linear model
+                             tabPanel("Prediction",
+                                      fluidRow(
+                                        #Input prediction values
+                                        column(width=3,
+                                               box(
+                                                 title = "Predict Using Your MLR Model",
+                                                 width = NULL,
+                                                 solidHeader = TRUE,
+                                                 status = "primary",
+                                                 selectInput(
+                                                   inputId = "week",
+                                                   label = "Report Week",
+                                                   choices = 1:52
+                                                 ),
+                                                 selectInput(
+                                                   inputId = "year",
+                                                   label = "Report Year",
+                                                   choices = c(2020, 2021, 2022)
+                                                 ),
+                                                 selectInput(
+                                                   inputId = "jurisdiction",
+                                                   label = "Jurisdiction",
+                                                   choices = state.name
+                                                 ),
+                                                 selectInput(
+                                                   inputId = "age",
+                                                   label = "Age Group",
+                                                   choices = c("All Ages", 
+                                                               "0-17 years", 
+                                                               "18-64 years", 
+                                                               "65 years and over")
+                                                   ),
+                                                 sliderInput(
+                                                   inputId = "deathTotal",
+                                                   label = "Total Deaths (All Causes)",
+                                                   min = 0,
+                                                   max = 100000,
+                                                   value = 0
+                                                 ),
+                                                 sliderInput(
+                                                   inputId = "pneumonia",
+                                                   label = "Pneumonia Deaths",
+                                                   min = 0,
+                                                   max = 10000,
+                                                   value = 0
+                                                 ),
+                                                 sliderInput(
+                                                   inputId = "flu",
+                                                   label = "Influenza Deaths",
+                                                   min = 0,
+                                                   max = 3000,
+                                                   value = 0
+                                                 )
+                                                 )
+                                               ),
+                                        column(width = 9,
+                                               box(
+                                                 title = "Predict Using Your MLR Model",
+                                                 width = NULL,
+                                                 solidHeader = TRUE,
+                                                 status = "primary",
+                                                 dataTableOutput(
+                                                   outputId = "predictions"
+                                                 )
+                                               )
+                                        )
+                                        
+                                               )
+                                        #View results
+                                        
+                                      )
                              )
                            ),
                   tabPanel("Data Page",

@@ -64,31 +64,64 @@ Deaths_Model_Set<-create_model_dataset(Deaths_Data)
 ##############Numerical Summaries
 
 #The create_summaries() function will take in a character vector of desired summaries that the user requests and return the appropriate values.
-create_sum_formula<-function(sumType=NULL, sumVar){
-  deathVar<-
-    CDCvars[sumVar]
-  
-  chosenSums<-
-    modelVars[sumType]
-  
-  responseVar<- "Covid_19_Deaths"
-  predictorVars<- c(chosenSums)
-  #creating formulas based on user input. If user does not input variables the function will create a formula containing all variables by default.
-  formulaVar<-
-    if(is.null(varsSelected)){
-      as.formula(summarize
-                 ( "Minimum Deaths Per Week" = min(.data[[deathVar]]),
-                   "Q1 Deaths Per Week" = quantile(.data[[deathVar]], 0.25),
-                   "Median Deaths Per Week" = median(.data[[deathVar]]),
-                   "Mean Deaths Per Week" = round(mean(.data[[deathVar]])),
-                   "Q3 Deaths Per Week" = quantile(.data[[deathVar]], 0.75),
-                   "Maximum Deaths Per Week" = max(.data[[deathVar]]),
-                   "Count" = n()))
-    } else {
-      as.formula(paste(responseVar, paste(predictorVars, collapse = " + "), sep = " ~ "))
-    }
-  return(formulaVar)
-}
+# create_summaries<-function(sumType="Calculate All Summaries", sumVar, groupsBy){
+#   #Allowing user input for variable to use for summary data. CDCvars is a dictionary of key value pairs saved in dict.R 
+#   deathVar<-
+#     CDCvars[sumVar]
+#   
+#   #Allowing user input for how to group summary data. groupings is a dictionary of key value pairs saved in dict.R
+#   group_summary_by<-
+#     groupings[groupsBy]
+# 
+#   #creating formulas based on user input for sumType. If user does not input sumType the function will create all summaries by default.
+#   formulaVar<-
+#     if(is.null(sumType="Calculate All Summaries")){
+#       as.formula(summarize
+#                  ( "Minimum Deaths Per Week" = min(.data[[deathVar]]),
+#                    "Q1 Deaths Per Week" = quantile(.data[[deathVar]], 0.25),
+#                    "Median Deaths Per Week" = median(.data[[deathVar]]),
+#                    "Mean Deaths Per Week" = round(mean(.data[[deathVar]])),
+#                    "Q3 Deaths Per Week" = quantile(.data[[deathVar]], 0.75)
+#                    # "Maximum Deaths Per Week" = max(.data[[deathVar]])
+#                    )
+#                  )
+#       
+#     } else if (sumType="Minimum Deaths Per Week"){
+#       as.formula(summarize("Minimum Deaths Per Week" = min(.data[[deathVar]])))
+#       
+#     } else if (sumType="Q1 Deaths Per Week"){
+#       as.formula(summarize("Q1 Deaths Per Week" = quantile(.data[[deathVar]], 0.25)))
+#       
+#     } else if (sumType="Median Deaths Per Week"){
+#       as.formula(summarize("Median Deaths Per Week" = median(.data[[deathVar]])))
+#       
+#     } else if (sumType="Mean Deaths Per Week"){
+#       as.formula(summarize("Mean Deaths Per Week" = round(mean(.data[[deathVar]]))))
+#       
+#     } else if (sumType="Q3 Deaths Per Week"){
+#       as.formula(summarize("Q3 Deaths Per Week" = quantile(.data[[deathVar]], 0.75)))
+#       
+#     # } else if (sumType="Maximum Deaths Per Week"){
+#     #   as.formula(summarize("Maximum Deaths Per Week" = max(.data[[deathVar]])))
+#     }
+#   
+#   summary_data<- 
+#     #Allowing user to see overall summary by selecting "All Groups".
+#     if(groups_by=="All Groups"){
+#       Deaths_Data%>%
+#         na.omit()%>%
+#         formulaVar
+#       
+#       #Allowing user to see summary by subgroup selected.
+#     } else {
+#       Deaths_Data%>%
+#         na.omit%>%
+#         group_by(.data[[group_summary_by]])%>%
+#         formulaVar
+#     }
+#   
+#   return(summary_data)
+# }
 
 #create_summary will return summary statistics based on user input for summary_variable and grouping.
 create_summary<- function(summary_variable, groups_by){

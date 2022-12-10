@@ -1,15 +1,20 @@
 library(jsonlite)
 library(tidyverse)
+library(maps)
+library(sp)
+library(geojsonio)
+library(geojsonlint)
 library(shiny)
 library(shinydashboard)
+library(leaflet)
 library(shinycssloaders)
 library(plotly)
 library(htmltools)
 library(DT)
 library(shinyjs)
-library(rpart)
-library(randomForest)
+
 library(caret)
+
 #Contacting CDC's API. There are three possible endpoints to contact, "Total_Deaths", "Flu_Vaccination" and "Covid_Vaccination".
 
 get_endpoint_info<- function(endpointName){
@@ -55,6 +60,7 @@ Clean_Deaths_Data<-function(endpointDataset){
       Data_As_Of = as.Date(Total_Deaths$data_as_of, "%m/%d/%y"),
       Start_Week = as.Date(Total_Deaths$start_week, "%m/%d/%y"),
       End_Week = as.Date(Total_Deaths$end_week, "%m/%d/%y"),
+      Week_Ending_Date = as.Date(substr(Total_Deaths$week_ending_date, 1, 10)),
       Age_Group = factor(Total_Deaths$age_group),
       Covid_19_Deaths = as.numeric(Total_Deaths$covid_19_deaths),
       Deaths_Total = as.numeric(Total_Deaths$total_deaths),
@@ -87,7 +93,7 @@ get_summary<- function(summary_variable, groups_by){
   death_variable<-
     CDCvars[summary_variable]
 
-#Allowing user input for how to group summary data. groupings is a dictionary of key value pairs saved in dict.R
+#Allowing user input for how to group summary data. groupings is a dictionary of key value pairs saved in dict.R    
   group_summary_by<-
     groupings[groups_by]
   
@@ -146,7 +152,7 @@ summary_wrapper<-function(variable, by_group){
 Sum<-summary_wrapper("Covid 19 Deaths", "Age")
 
 
-get_bar_plot<- function(variable, graphGroups){
+getPlot<- function(variable, graphGroups){
   #Allowing user input for variable to use for summary data. CDCvars is a dictionary of key value pairs saved in dict.R 
   death_variable<-
     CDCvars[variable]
@@ -167,10 +173,6 @@ get_bar_plot<- function(variable, graphGroups){
 
   return(deathsPlot)
 }
-
-
-
-
 
 
 
@@ -210,29 +212,29 @@ groupings[["Age"]]
 
 #################INTERACTIVE MAP###############################
   
-#   mapStates<- map("state", fill = TRUE, plot = FALSE)
-# 
-# baseMap<-leaflet(data = mapStates)%>%
-#   addTiles()
-# 
-# 
-# 
-#   leaflet(data = mapStates)%>%
-#     addTiles() %>%
-#     addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
-# 
-#   
-#   m = leaflet() %>% addTiles()
-#   df = data.frame(
-#     lat = rnorm(100),
-#     lng = rnorm(100),
-#     size = runif(100, 5, 20),
-#     color = sample(colors(), 100)
-#   )
-#   m = leaflet(df) %>% addTiles()
-#   m %>% addCircleMarkers(radius = ~size, color = ~color, fill = FALSE)
-#   m %>% addCircleMarkers(radius = runif(100, 4, 10), color = c('red'))
-#   
+  mapStates<- map("state", fill = TRUE, plot = FALSE)
+
+baseMap<-leaflet(data = mapStates)%>%
+  addTiles()
+
+
+
+  leaflet(data = mapStates)%>%
+    addTiles() %>%
+    addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
+
+  
+  m = leaflet() %>% addTiles()
+  df = data.frame(
+    lat = rnorm(100),
+    lng = rnorm(100),
+    size = runif(100, 5, 20),
+    color = sample(colors(), 100)
+  )
+  m = leaflet(df) %>% addTiles()
+  m %>% addCircleMarkers(radius = ~size, color = ~color, fill = FALSE)
+  m %>% addCircleMarkers(radius = runif(100, 4, 10), color = c('red'))
+  
   
   
   library(GGally)
@@ -240,7 +242,7 @@ groupings[["Age"]]
     dplyr::select(Deaths_Total, Covid_19_Deaths, Pneumonia_Deaths, Influenza_Deaths, Pneumonia_Or_Influenza_Deaths, Pneumonia_Influenza_Or_Covid_Deaths)%>%
     ggpairs()
     
-  GGally::ggcorr(Deaths_Model_Set, label=TRUE)
+  GGally::ggcorr(Deaths_Data, label=TRUE)
   
   
   Deaths_Data%>%
@@ -249,20 +251,20 @@ groupings[["Age"]]
   
 
 #################MODEL FITTING###############################
-#We are going to try to create a model to predict Covid_19_Deaths using variables that do not contain any information specific to covid deaths. We will also remove the Pneumonia_Or_Influenza_Deaths variable as it is highly correlated with other predictor variables for influenza and pneumonia deaths. Before we begin builidng the models we want to remove the variable "Pneumonia_Influenza_Or_Covid_Deaths".
+#We are going to try to create a model to predict Covid_19_Deaths using variables that do not contain any information specific to covid deaths.  Before we begin builidng the models we want to remove the variable "Pneumonia_Influenza_Or_Covid_Deaths" as well as removing NA values from the data set
 
 Deaths_Model_Set<- Deaths_Data%>%
-    select(!c(Pneumonia_Influenza_Or_Covid_Deaths,  Pneumonia_Or_Influenza_Deaths, Data_As_Of))
+    na.omit%>%
+    select(!Pneumonia_Influenza_Or_Covid_Deaths)
 
 
 ##########Creating a train and test set########################
-
-    trainIndex<- createDataPartition(Deaths_Model_Set$Covid_19_Deaths, p = 0.15, list=FALSE)
+    trainIndex<- createDataPartition(Deaths_Model_Set$Covid_19_Deaths, p = 0.80, list=FALSE)
   deathTrain<- Deaths_Model_Set[trainIndex,]
   deathTest<- Deaths_Model_Set[-trainIndex,]
   
 #############MLR Model#####################
-  MLRmodel<- train(Covid_19_Deaths ~ ., data=deathTrain,
+  MLRmodel<- train(Covid_19_Deaths ~ mmwrweek + Influenza_Deaths + Pneumonia, data=deathTrain,
                    method = "lm",
                    trControl = trainControl(method = "cv"))
 
@@ -270,29 +272,28 @@ Deaths_Model_Set<- Deaths_Data%>%
 
 
 ###################Tree Model###################
-
+  
   library(rpart)
   
-  TreeFit<-rpart(formula=Covid_19_Deaths ~ ., data=deathTrain)
-
-  plot(TreeFit$variable.importance)
+  fitTree<-tree(Covid_19_Deaths ~ mmwrweek + Influenza_Deaths, data=deathTrain)
   
-
+  plot(fitTree)
+  text(fitTree)
+  
+  TreeFit<- train(Covid_19_Deaths ~., data = deathTrain,
+                  method = "rpart2",
+                  tuneLength = 10,
+                  trControl = trainControl(method = "cv"))
 TreeFit
   plot(TreeFit)
-  text(TreeFit)
+  plot(TreeFit$finalModel)
+  text(TreeFit$finalModel)
   
-
+  rpart.plot
 #################Random Forest Model###########
-library(randomForest)
   
-#  rfFit<- randomForest(Covid_19_Deaths ~., data = deathTrain, importance=TRUE)
-  
-
-  rfFit<- train(Covid_19_Deaths ~., data = deathTrain[,-1],
+  rfFit<- train(Covid_19_Deaths ~., data = deathTrain,
                 method = "rf",
-                trControl = trainControl(method = "cv"),
-                tuneGrid = data.frame(mtry = 1:3))
-  
-  plot(rfFit)
-
+                trControl = trainControl(method = "cv",
+                                         number = 5),
+                tuneGrid = data.frame(mtry = 1:13))
