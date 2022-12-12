@@ -312,7 +312,7 @@ shinyUI(fluidPage(
                                             width = NULL,
                                             solidHeader = TRUE,
                                             status = "primary",
-                                            DTOutput(outputId = "trainFitTable")
+                                            DTOutput(outputId = "testPredictDataFrame")
                                           ),
                                           box(
                                             title = "Linear Model Performance on Training Set",
@@ -354,72 +354,17 @@ shinyUI(fluidPage(
                                       column(
                                         width = 8,
                                         box(
-                                          title="What model would you like to use for your perdictions?",
+                                          title="What values would you like to use for your predictions?",
                                           width = NULL,
                                           solidHeader = TRUE,
                                           status = "primary",
-                                          selectInput(
-                                            inputId = "modelSelect",
-                                            label = "Pick your model",
-                                            choices = c("MLR Model", "Regression Tree Model", "Random Forest Model")
-                                            ),
                                           uiOutput("predictValueWeek"),
                                           uiOutput("predictValueYear"),
                                           uiOutput("predictValueJurisdiction"),
                                           uiOutput("predictValueAge"),
                                           uiOutput("predictValueDeathTotal"),
                                           uiOutput("predictValuePneumonia"),
-                                          uiOutput("predictValueFlu")
-                                        ),
-                                        box(
-                                          title = "Predict Using Your MLR Model",
-                                          width = NULL,
-                                          solidHeader = TRUE,
-                                          status = "primary",
-                                          selectInput(
-                                            inputId = "week",
-                                            label = "Report Week",
-                                            choices = 1:52
-                                          ),
-                                          selectInput(
-                                            inputId = "year",
-                                            label = "Report Year",
-                                            choices = c(2020, 2021, 2022)
-                                          ),
-                                          selectInput(
-                                            inputId = "jurisdiction",
-                                            label = "Jurisdiction",
-                                            choices = state.name
-                                          ),
-                                          selectInput(
-                                            inputId = "age",
-                                            label = "Age Group",
-                                            choices = c("All Ages",
-                                                        "0-17 years",
-                                                        "18-64 years",
-                                                        "65 years and over")
-                                          ),
-                                          sliderInput(
-                                            inputId = "deathTotal",
-                                            label = "Total Deaths (All Causes)",
-                                            min = 0,
-                                            max = 100000,
-                                            value = 0
-                                          ),
-                                          sliderInput(
-                                            inputId = "pneumonia",
-                                            label = "Pneumonia Deaths",
-                                            min = 0,
-                                            max = 10000,
-                                            value = 0
-                                          ),
-                                          sliderInput(
-                                            inputId = "flu",
-                                            label = "Influenza Deaths",
-                                            min = 0,
-                                            max = 3000,
-                                            value = 0
-                                          ),
+                                          uiOutput("predictValueFlu"),
                                           actionButton(
                                             inputId = "predict",
                                             label = "Make Prediction",
@@ -427,7 +372,58 @@ shinyUI(fluidPage(
                                             class = "btn-info",
                                             icon = icon("magnifying-glass-chart")
                                           )
-                                        )
+                                        ),
+                                        # box(
+                                        #   title = "Predict Using Your MLR Model",
+                                        #   width = NULL,
+                                        #   solidHeader = TRUE,
+                                        #   status = "primary",
+                                        #   selectInput(
+                                        #     inputId = "week",
+                                        #     label = "Report Week",
+                                        #     choices = 1:52
+                                        #   ),
+                                        #   selectInput(
+                                        #     inputId = "year",
+                                        #     label = "Report Year",
+                                        #     choices = c(2020, 2021, 2022)
+                                        #   ),
+                                        #   selectInput(
+                                        #     inputId = "jurisdiction",
+                                        #     label = "Jurisdiction",
+                                        #     choices = state.name
+                                        #   ),
+                                        #   selectInput(
+                                        #     inputId = "age",
+                                        #     label = "Age Group",
+                                        #     choices = c("All Ages",
+                                        #                 "0-17 years",
+                                        #                 "18-64 years",
+                                        #                 "65 years and over")
+                                        #   ),
+                                        #   sliderInput(
+                                        #     inputId = "deathTotal",
+                                        #     label = "Total Deaths (All Causes)",
+                                        #     min = 0,
+                                        #     max = 100000,
+                                        #     value = 0
+                                        #   ),
+                                        #   sliderInput(
+                                        #     inputId = "pneumonia",
+                                        #     label = "Pneumonia Deaths",
+                                        #     min = 0,
+                                        #     max = 10000,
+                                        #     value = 0
+                                        #   ),
+                                        #   sliderInput(
+                                        #     inputId = "flu",
+                                        #     label = "Influenza Deaths",
+                                        #     min = 0,
+                                        #     max = 3000,
+                                        #     value = 0
+                                        #   )
+                                        #   
+                                        # )
                                       ),
                                       column(
                                         width = 4,
@@ -490,7 +486,7 @@ shinyUI(fluidPage(
                              ),
                              box(
                                DTOutput(
-                                 outputId = "testDF")
+                                 outputId = "testDownloadDF")
                              )
                            )
                          ))

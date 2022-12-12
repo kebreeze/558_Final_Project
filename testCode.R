@@ -5,7 +5,9 @@ library(geojsonio)
 library(geojsonlint)
 library(leaflet) 
 
+#test<-data.frame(matrix(ncol=length(Deaths_Data), nrow = 1))
 
+#colnames(test)<-c(1:13)
 
 generateBox <- function(title, status="primary", inputId, label) {
   headerBox <- box(

@@ -11,10 +11,12 @@ library(rpart)
 library(randomForest)
 library(caret)
 
+print("CURRENT DIRECTORY")
+print(getwd())
 # source(".Renviron")
  source("text.R")
  source("dict.R")
- source("functions.R")
+ source("helperFile.R")
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
@@ -66,9 +68,7 @@ shinyServer(function(input, output, session) {
   #create models based on user input when runModels button is clicked
   MLRmodel <- reactive(
     {create_MLR(input$lmVarNames, trainSet())})%>%bindEvent(input$runModels)
-  #storing MLR variables chosen to use in generating UI for prediction tab
-  MLRmodelVars<-reactive(
-    {(input$lmVarNames)})%>%bindEvent(input$runModels)
+
   
   treeModel <- reactive(
     {create_tree(input$treeVars, trainSet())})%>%bindEvent(input$runModels)
@@ -94,10 +94,10 @@ shinyServer(function(input, output, session) {
      })
 
 ############################Performance on test set
-   testMLRResults<- reactive({
-     pred<-predict(MLRmodel(), newdata=testSet())
-       
-   })%>%bindEvent(input$runModels)
+   # testMLRResults<- reactive({
+   #   pred<-predict(MLRmodel(), newdata=testSet())
+   #     
+   # })%>%bindEvent(input$runModels)
 
 ###############Prediction Tab Code#################
    ######create reactive elements for use with ui for predict page
@@ -106,9 +106,14 @@ shinyServer(function(input, output, session) {
    
    #mmwrweek<- reactive({mmwrweek = input$week})%>%bindEvent()
    
-   
-   
-   
+   testPredictDataFrame<-reactive({
+     data.frame(matrix(ncol=length(input$lmVarNames), nrow = 1))
+   })%>%bindEvent(input$runModels)
+   # 
+   # 
+   output$testPredictDataFrame<-renderDT({
+     datatable(testPredictDataFrame())
+   })
    
   predictInput <-
     reactive({
@@ -140,34 +145,49 @@ shinyServer(function(input, output, session) {
 
   
   #reactive ui based on input for model variables in model fitting tab
-  
-  
+   # weekReact<-reactive({
+   #   if ("Report Week" %in% input$lmVarNames){
+   #     selectInput(
+   #       inputId = "week",
+   #       label = "Report Week",
+   #       choices = 1:52
+   #     )
+   #   }
+   # })%>%bindEvent(input$predict)
+
+
   
   output$predictValueWeek<-renderUI({
-    if ("Report Week" %in% input$lmVarNames){
-        selectInput(
-          inputId = "week",
-          label = "Report Week",
-          choices = 1:52
-        )
+    if ("Report Week"%in%(input$lmVarNames)){
+      selectInput(
+        inputId = "week",
+        label = "Report Week",
+        choices = 1:52
+      )
     }
-    })
+  })
 
   output$predictValueYear<-renderUI({
-    selectInput(
-      inputId = "year",
-      label = "Report Year",
-      choices = c(2020, 2021, 2022))
-  })
+    if("Report Year"%in%(input$lmVarNames)){
+      selectInput(
+        inputId = "year",
+        label = "Report Year",
+        choices = c(2020, 2021, 2022))
+    }
+  }
+  )
     
   output$predictValueJurisdiction<-renderUI({
+    if("Jurisdiction"%in%(input$lmVarNames)){
     selectInput(
       inputId = "jurisdiction",
       label = "Jurisdiction",
       choices = state.name)
+    }
   })
   
   output$predictValueAge<- renderUI({
+    if("Age Group"%in%(input$lmVarNames))
     selectInput(
       inputId = "age",
       label = "Age Group",
@@ -179,6 +199,7 @@ shinyServer(function(input, output, session) {
   })
   
 output$predictValueDeathTotal<- renderUI({
+  if("Total Deaths (All Causes)"%in%(input$lmVarNames))
   sliderInput(
     inputId = "deathTotal",
     label = "Total Deaths (All Causes)",
@@ -189,6 +210,7 @@ output$predictValueDeathTotal<- renderUI({
 })
 
 output$predictValuePneumonia<-renderUI({
+  if("Pneumonia"%in%(input$lmVarNames))
   sliderInput(
     inputId = "pneumonia",
     label = "Pneumonia Deaths",
@@ -199,6 +221,7 @@ output$predictValuePneumonia<-renderUI({
 })
 
 output$predictValueFlu<-renderUI({
+  if("Influenza Deaths"%in%(input$lmVarNames))
   sliderInput(
     inputId = "flu",
     label = "Influenza Deaths",
@@ -237,7 +260,7 @@ output$predictValueFlu<-renderUI({
   
 
   
-  output$testDF<- renderDT({
+  output$testDownloadDF<- renderDT({
      r<-Deaths_Data[input$CDCdataset_rows_selected, , drop=FALSE]
      c<-r[, input$CDCdataset_columns_selected, drop=FALSE]
     datatable(r<-Deaths_Data[input$CDCdataset_rows_selected, , drop=FALSE])

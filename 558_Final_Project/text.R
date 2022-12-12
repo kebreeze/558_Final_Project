@@ -4,7 +4,7 @@ app_title_text<-"US Covid 19 Deaths Dashboard"
 
 app_purpose_text<-"The purpose of this app is to allow users to explore the CDC dataset on Covid deaths, carryout some basic exploratory data analysis, generate supervised learning models including a linear regression model, a regression tree model and a random forest model, to make predictions about Covid 19 deaths, and to subset and download data from the dataset as desired."
 
-about_data_text<-"https://data.cdc.gov/NCHS/Provisional-Death-Counts-for-Influenza-Pneumonia-a/ynw2-4viq 
+about_data_text<-"[CDC COVID Deaths Data]https://data.cdc.gov/NCHS/Provisional-Death-Counts-for-Influenza-Pneumonia-a/ynw2-4viq 
 Briefly discuss the data and its source - providing a link to more information about the data"
 
 tab_purpose_text<-"Tell the user the purpose of each tab (page) of the app"
@@ -36,3 +36,11 @@ lm_vars_text<-"Select all variables that you want to include in your MLR model. 
 tree_vars_text<-"Select all variables that you want to include in your regression tree model. If no variables are selected a regression tree model will be built using all variables."
 
 rf_vars_text<-"Select all variables that you want to include in your random forest model. If no variables are selected a random forest model will be built using all variables."
+
+
+
+
+
+
+
+
