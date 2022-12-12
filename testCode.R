@@ -5,11 +5,229 @@ library(geojsonio)
 library(geojsonlint)
 library(leaflet) 
 
-atree<-create_tree(trainingData=b)
 
-treeMV<-atree[["terms"]][[3]]
 
-charTreeMV<-as.character(treeMV)
+generateBox <- function(title, status="primary", inputId, label) {
+  headerBox <- box(
+    title = title,
+    width = NULL,
+    solidHeader = TRUE,
+    status = status,
+    lm_vars_text,
+    checkboxGroupInput(
+      inputId = inputId,
+      label = label,
+      choices = names(modelVars)
+    )
+  )
+  
+  return (headerBox)
+}
+
+#UI
+tabPanel("Prediction",
+         fluidRow(
+           #Input prediction values
+           column(
+             width = 3,
+             box(
+               title="What model would you like to use for your perdictions?",
+               width = NULL,
+               solidHeader = TRUE,
+               status = "primary",
+               selectInput(
+                 inputId = "model",
+                 label = "Pick your model",
+                 choices = c("MLR Model", "Regression Tree Model", "Random Forest Model")
+               )
+             ),
+             box(
+               uiOutput("predictVariables")
+             ),
+             box(
+               title = "Predict Using Your MLR Model",
+               width = NULL,
+               solidHeader = TRUE,
+               status = "primary",
+               selectInput(
+                 inputId = "week",
+                 label = "Report Week",
+                 choices = 1:52
+               ),
+               selectInput(
+                 inputId = "year",
+                 label = "Report Year",
+                 choices = c(2020, 2021, 2022)
+               ),
+               selectInput(
+                 inputId = "jurisdiction",
+                 label = "Jurisdiction",
+                 choices = state.name
+               ),
+               selectInput(
+                 inputId = "age",
+                 label = "Age Group",
+                 choices = c("All Ages",
+                             "0-17 years",
+                             "18-64 years",
+                             "65 years and over")
+               ),
+               sliderInput(
+                 inputId = "deathTotal",
+                 label = "Total Deaths (All Causes)",
+                 min = 0,
+                 max = 100000,
+                 value = 0
+               ),
+               sliderInput(
+                 inputId = "pneumonia",
+                 label = "Pneumonia Deaths",
+                 min = 0,
+                 max = 10000,
+                 value = 0
+               ),
+               sliderInput(
+                 inputId = "flu",
+                 label = "Influenza Deaths",
+                 min = 0,
+                 max = 3000,
+                 value = 0
+               ),
+               actionButton(
+                 inputId = "predict",
+                 label = "Make Prediction",
+                 width = "100%",
+                 class = "btn-info",
+                 icon = icon("magnifying-glass-chart")
+               )
+             )
+           ),
+           column(
+             width = 9,
+             box(
+               title = "Values Used to Calculate Predictions for Covid (MLR Model)",
+               width = NULL,
+               solidHeader = TRUE,
+               status = "primary",
+               textOutput(outputId = "predictionsTable"
+               )
+             )
+           )
+           
+         ))
+)),
+
+
+#server
+tabPanel("Prediction",
+         fluidRow(
+           #Input prediction values
+           column(
+             width = 3,
+             box(
+               uiOutput("predictVariables")
+             ),
+             box(
+               title = "Predict Using Your MLR Model",
+               width = NULL,
+               solidHeader = TRUE,
+               status = "primary",
+               selectInput(
+                 inputId = "week",
+                 label = "Report Week",
+                 choices = 1:52
+               ),
+               selectInput(
+                 inputId = "year",
+                 label = "Report Year",
+                 choices = c(2020, 2021, 2022)
+               ),
+               selectInput(
+                 inputId = "jurisdiction",
+                 label = "Jurisdiction",
+                 choices = state.name
+               ),
+               selectInput(
+                 inputId = "age",
+                 label = "Age Group",
+                 choices = c("All Ages",
+                             "0-17 years",
+                             "18-64 years",
+                             "65 years and over")
+               ),
+               sliderInput(
+                 inputId = "deathTotal",
+                 label = "Total Deaths (All Causes)",
+                 min = 0,
+                 max = 100000,
+                 value = 0
+               ),
+               sliderInput(
+                 inputId = "pneumonia",
+                 label = "Pneumonia Deaths",
+                 min = 0,
+                 max = 10000,
+                 value = 0
+               ),
+               sliderInput(
+                 inputId = "flu",
+                 label = "Influenza Deaths",
+                 min = 0,
+                 max = 3000,
+                 value = 0
+               ),
+               actionButton(
+                 inputId = "predict",
+                 label = "Make Prediction",
+                 width = "100%",
+                 class = "btn-info",
+                 icon = icon("magnifying-glass-chart")
+               )
+             )
+           ),
+           column(
+             width = 9,
+             box(
+               title = "Values Used to Calculate Predictions for Covid (MLR Model)",
+               width = NULL,
+               solidHeader = TRUE,
+               status = "primary",
+               textOutput(outputId = "predictionsTable"
+               )
+             )
+           )
+           
+         ))
+)),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

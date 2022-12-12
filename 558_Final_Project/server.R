@@ -1,12 +1,3 @@
-#
-# This is the server logic of a Shiny web application. You can run the
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(jsonlite)
 library(tidyverse)
 library(shiny)
@@ -21,17 +12,27 @@ library(randomForest)
 library(caret)
 
 # source(".Renviron")
-# source("text.R")
-# source("dict.R")
-# source("functions.R")
+ source("text.R")
+ source("dict.R")
+ source("functions.R")
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   #########Data Exploration Page Code###########
   ##Summary data tables based on user inputs##
-  output$summary<- DT::renderDataTable(
-    {create_summary(input$varDeath, input$groups)}, 
-    class="cell-border stripe", 
+  output$summary<- renderDT(
+    {summaryTable<-
+      if (input$type=="All Basic Summaries"){
+        create_summary(input$varDeath, input$groups)
+      } else if(input$type=="Measures of Center"){
+        create_center_summary(input$varDeath, input$groups)
+      } else if(input$type=="Measures of Spread"){
+        create_spread_summary(input$varDeath, input$groups)
+      } else if(input$type=="Counts"){
+        create_count_summary(input$varDeath, input$groups)
+      }
+      }, 
+    class="cell-border stripe hover", 
     caption = as.character(input$varDeath)
   )
   
@@ -39,57 +40,214 @@ shinyServer(function(input, output, session) {
   output$barPlot<- renderPlot(
     {create_bar_plot(input$varDeathBar, input$barplotType)})
   
+  output$scatterPlot<- renderPlot(
+    {create_scatter(x=input$scatterx, y=input$scattery, color = input$scatteColor)})
+  
+  output$histPlot<- renderPlot(
+    {create_histogram(x=input$histogram, bin = input$bin)}
+  )
+  ##########Model Fitting Page Code################
+  
+  ######Using eventReactive to store outputs from user selections for model inputs when action button runModels is pressed#########
+  
+  #create index, train and test sets based on user input for percentage to include in training set
+  trainIndex <-
+    reactive({
+      create_split(input$split)
+    }) %>%
+    bindEvent(input$runModels)
+
+  trainSet<-reactive(
+    {create_train_set(Deaths_Model_Set, trainIndex())})%>%bindEvent(input$runModels)
+  
+  testSet<-reactive(
+    {create_test_set(Deaths_Model_Set, trainIndex())})%>%bindEvent(input$runModels)
+  
+  #create models based on user input when runModels button is clicked
+  MLRmodel <- reactive(
+    {create_MLR(input$lmVarNames, trainSet())})%>%bindEvent(input$runModels)
+  #storing MLR variables chosen to use in generating UI for prediction tab
+  MLRmodelVars<-reactive(
+    {(input$lmVarNames)})%>%bindEvent(input$runModels)
+  
+  treeModel <- reactive(
+    {create_tree(input$treeVars, trainSet())})%>%bindEvent(input$runModels)
+  
+  rfModel <- reactive(
+    {create_forest(input$forestVars, trainSet())})%>%bindEvent(input$runModels)
+
+
+  # #create tables of fit stats and plots for our models
+  # #fit for MLR model
+   output$selected_lm <- renderDT({datatable(MLRmodel()$results)})
+     
+     #modelVars[input$lmVarNames])
+     
+  # #fit for regression tree model
+  output$selected_tree <- renderDT({datatable(treeModel()$results)})
+   output$tree_plot <- renderPlot({
+       plot(treeModel())
+     })
+  #fit for forest model
+   output$selected_forest <- renderDT({
+     datatable(rfModel()$results)
+     })
+
+############################Performance on test set
+   testMLRResults<- reactive({
+     pred<-predict(MLRmodel(), newdata=testSet())
+       
+   })%>%bindEvent(input$runModels)
+
+###############Prediction Tab Code#################
+   ######create reactive elements for use with ui for predict page
+   
+
+   
+   #mmwrweek<- reactive({mmwrweek = input$week})%>%bindEvent()
+   
+   
+   
+   
+   
+  predictInput <-
+    reactive({
+      data.frame(
+        mmwrweek = input$week,
+        mmwryear = input$year,
+        jurisdiction = input$jurisdiction,
+        Age_Group = input$age,
+        Deaths_Total = input$deathTotal,
+        Pneumonia_Deaths = input$pneumonia,
+        Influenza_Deaths = input$flu
+      )
+    })%>%bindEvent(input$predict)
+    
+  deathPredict<- reactive({
+      newdata <- predictInput()
+      model <- rfModel()
+      predictions <- round(predict(model, newdata))
+  })%>%bindEvent(input$predict)
+  
+  #######This works to generate predictions
+  output$predictionsTable <- renderText({
+    predictions <- deathPredict()
+    
+    paste("Predicted Covid Deaths", predictions)
+  })
+  
+  
 
   
-  ##########Model Fitting Page Code################
-  ##User input for variables and actionButton##
-  observeEvent(input$runModels,{
-    
-    #create index, train and test sets based on user input for percentage to include in the training set
-    trainIndex<-create_split(input$split)
-    trainSet<-create_train_set(Deaths_Model_Set, trainIndex)
-    testSet<-create_test_set(Deaths_Model_Set,trainIndex)
-    #create models based on user input
-    MLRmodel<-create_MLR(input$lmVarNames, trainSet)
-    treeModel<-create_tree(input$treeVars, trainSet)
-    rfModel<-create_forest(input$forestVars, trainSet)
-    #create tables of fit stats and plots for our models
-    #fit for MLR model
-    output$selected_lm<- DT::renderDataTable(
-      (MLRmodel$results)
-    )
-    #fit for regression tree model
-    output$selected_tree<- DT::renderDataTable(
-      (treeModel$results)
-    )
-    output$tree_plot<- renderPlot({
-      plot(treeModel)
+  #reactive ui based on input for model variables in model fitting tab
+  
+  
+  
+  output$predictValueWeek<-renderUI({
+    if ("Report Week" %in% input$lmVarNames){
+        selectInput(
+          inputId = "week",
+          label = "Report Week",
+          choices = 1:52
+        )
+    }
     })
-    #fit for forest model
-    output$selected_forest<- DT::renderDataTable(
-      (rfModel$results)
-    )
-    
-    output$testFitTable<- DT::renderDataTable({
-      create_test_stats(MLRmodel, testSet)
-    })
-#    (input$lmVarNames)
-    # print(input$treeVars)
-    # print(paste((input$forestVars), collapse = "+"))
+
+  output$predictValueYear<-renderUI({
+    selectInput(
+      inputId = "year",
+      label = "Report Year",
+      choices = c(2020, 2021, 2022))
   })
-  # output$selected_lm<- renderText({
-  #   paste("You have selected", input$lmVarNames) 
-  # })
+    
+  output$predictValueJurisdiction<-renderUI({
+    selectInput(
+      inputId = "jurisdiction",
+      label = "Jurisdiction",
+      choices = state.name)
+  })
+  
+  output$predictValueAge<- renderUI({
+    selectInput(
+      inputId = "age",
+      label = "Age Group",
+      choices = c("All Ages",
+                  "0-17 years",
+                  "18-64 years",
+                  "65 years and over")
+    )
+  })
+  
+output$predictValueDeathTotal<- renderUI({
+  sliderInput(
+    inputId = "deathTotal",
+    label = "Total Deaths (All Causes)",
+    min = 0,
+    max = 100000,
+    value = 0
+  )
+})
+
+output$predictValuePneumonia<-renderUI({
+  sliderInput(
+    inputId = "pneumonia",
+    label = "Pneumonia Deaths",
+    min = 0,
+    max = 10000,
+    value = 0
+  )
+})
+
+output$predictValueFlu<-renderUI({
+  sliderInput(
+    inputId = "flu",
+    label = "Influenza Deaths",
+    min = 0,
+    max = 3000,
+    value = 0
+  )
+})
+  
+  
   
   #########Data Page Code########################
   ##Allow users to scroll through dataset
-  output$CDCdataset<- DT::renderDataTable(
-    Deaths_Data,
-    options = list(scrollX=TRUE)
-  )
-  #Allow users to download the dataset
+  # output$CDCdataset<- renderDT(
+  #   Deaths_Data,
+  #   server = FALSE
+  # )
+  
+  CDC2<- Deaths_Data[,1:13]
+  output$CDCdataset<- renderDT(CDC2, server=TRUE, selection=list(target='row+column'))
+  
+  
+  output$test<- renderPrint({
+    s<-input$CDCdataset_rows_selected
+    c<-input$CDCdataset_columns_selected
+    if (length(s)){
+      cat('These rows were selected:\n\n')
+      cat(s, sep = ', ')
+    }
+    if (length(c)){
+      cat('These columns were selected:\n\n')
+      cat(c, sep = ', ')
+    }
+    })
+
+  
+
+  
+  output$testDF<- renderDT({
+     r<-Deaths_Data[input$CDCdataset_rows_selected, , drop=FALSE]
+     c<-r[, input$CDCdataset_columns_selected, drop=FALSE]
+    datatable(r<-Deaths_Data[input$CDCdataset_rows_selected, , drop=FALSE])
+ })
+  
+    #Allow users to download the dataset
   output$download<- downloadHandler(
     filename = function(){paste("CDC_Covid_Deaths", Sys.Date(), ".csv", sep = "")},
-    content = function(file){write.csv(Deaths_Data, file)}
+    content = function(file){
+      r<-input$CDCdataset_rows_all
+      write.csv(CDC2[r, , drop = FALSE], file)}
     )
 })

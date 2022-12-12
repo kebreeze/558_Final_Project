@@ -36,11 +36,11 @@ ggplot(Deaths_Data, aes(x=Covid_19_Deaths)) +
 
 
 #Boxplot of deaths per week
-ggplot(Deaths_Data, aes(x=mmwryear, y=Deaths_Total)) + 
+ggplot(Deaths_Data, aes(x=MMWRyear, y=Deaths_Total)) + 
   geom_boxplot()
 
 
-ggplot(Deaths_Data, aes(x=mmwryear)) +
+ggplot(Deaths_Data, aes(x=MMWRyear)) +
   geom_bar()
 
 #read in data
