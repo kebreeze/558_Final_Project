@@ -341,7 +341,7 @@ shinyUI(fluidPage(
                                             width = NULL,
                                             solidHeader = TRUE,
                                             status = "primary",
-                                            verbatimTextOutput(outputId = "testMLRFit"),
+                                            DTOutput(outputId = "testMLRFit"),
                                             DTOutput(outputId = "testTreeFit"),
                                             DTOutput(outputId = "testRfFit")
                                           )

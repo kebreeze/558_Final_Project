@@ -96,8 +96,10 @@ shinyServer(function(input, output, session) {
 ############################Performance on test set
    
    
-   output$testMLRFit<- renderText({
-     print(testMLRResults())})
+   output$testMLRFit<- renderDT({
+     mlrFit<- testMLRResults()
+     tibble(model=c("MLR"), RMSE = c(testMLRResults()[[1]]), Rsquared = c(mlrFit[[2]]))
+     })
    
     testMLRResults<- reactive({
       MLRmod<-MLRmodel()
