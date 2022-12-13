@@ -201,10 +201,10 @@ shinyUI(fluidPage(
                                width = 4,
                                solidHeader = TRUE,
                                status = "primary",
-                               helpText(
-                                 "Linear regression provides a relatively simple way to predict a quantitative response. In a simple linear regression we use a single predictor $$X$$ to predict a response $Y$. In a simple linear model we have two unknown constants, $Beta_0$ represents the intercept and $Beta_1$ represents the slope. $Beta_0$ is the expected value of $Y$ when $X=0$. $Beta_1$ is the average change in $Y$ that is associated with an increase of one-unit of $X$. In linear regression we use our training data to produce estimated values for $Beta_0$ and $Beta_1$ which can then be used to make predictions on our test data. $$\\alpha+\\beta$$"
-                               ),
-                               helpText("Some math here $$\\alpha+\\beta$$")
+                               lm_info_text1,
+                               helpText('Where: \\(Y_i\\) = your continuous target or response variable,
+                                          \\(x1...\\) = your predictor variable(s), \\(B_0\\) = the intercept, and \\(B_1...\\) = the slope associated with the predictor variable(s).'),
+                               lm_info_text2
                              ),
                              box(
                                title = h1("Tree Model"),
@@ -319,7 +319,6 @@ shinyUI(fluidPage(
                                             width = NULL,
                                             solidHeader = TRUE,
                                             status = "primary",
-                                            #DTOutput(outputId = "selected_lm")
                                             DTOutput("selected_lm")
                                           ),
                                           box(
@@ -338,11 +337,13 @@ shinyUI(fluidPage(
                                             DTOutput(outputId = "selected_forest")
                                           ),
                                           box(
-                                            title = "Table of Fit Statistics on Test Set",
+                                            title = "Comparing Fit Statistics on Test Set For Our Models",
                                             width = NULL,
                                             solidHeader = TRUE,
                                             status = "primary",
-                                            DTOutput(outputId = "testFitTable")
+                                            verbatimTextOutput(outputId = "testMLRFit"),
+                                            DTOutput(outputId = "testTreeFit"),
+                                            DTOutput(outputId = "testRfFit")
                                           )
                                         )
                                       )
@@ -448,8 +449,20 @@ shinyUI(fluidPage(
                                width = NULL,
                                solidHeader = TRUE,
                                status = "primary",
+                               h4("Search for terms, highlight rows, and highlight columns! When you are ready click the download selected data button below"),
                                downloadButton(
-                                 outputId = "download",
+                                 outputId = "downloadSelect",
+                                 label = "Download Selected Data",
+                                 icon = icon("filter"),
+                                 class = "btn-info",
+                                 width = "100%"
+                               ), 
+                               br(),
+                               br(),
+                               h4("Just want the entire data set? Click the download all data button to download the full data set."),
+                               downloadButton(
+                                 outputId = "downloadAll",
+                                 label = "Download All Data",
                                  class = "btn-info",
                                  width = "100%"
                                )

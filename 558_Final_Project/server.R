@@ -86,7 +86,7 @@ shinyServer(function(input, output, session) {
   # #fit for regression tree model
   output$selected_tree <- renderDT({datatable(treeModel()$results)})
    output$tree_plot <- renderPlot({
-       plot(treeModel())
+       plot(rfModel())
      })
   #fit for forest model
    output$selected_forest <- renderDT({
@@ -94,11 +94,21 @@ shinyServer(function(input, output, session) {
      })
 
 ############################Performance on test set
-   # testMLRResults<- reactive({
-   #   pred<-predict(MLRmodel(), newdata=testSet())
-   #     
-   # })%>%bindEvent(input$runModels)
+   
+   
+   output$testMLRFit<- renderText({
+     print(testMLRResults())})
+   
+    testMLRResults<- reactive({
+      MLRmod<-MLRmodel()
+      testingSet<-testSet()
+      pred<-round(predict(MLRmod, newdata=testingSet))
+      fit<-postResample(pred, obs=testingSet$Covid_19_Deaths)
+      return(fit)
+    })%>%bindEvent(input$runModels)
 
+
+    
 ###############Prediction Tab Code#################
    ######create reactive elements for use with ui for predict page
    
@@ -234,12 +244,9 @@ output$predictValueFlu<-renderUI({
   
   
   #########Data Page Code########################
-  ##Allow users to scroll through dataset
-  # output$CDCdataset<- renderDT(
-  #   Deaths_Data,
-  #   server = FALSE
-  # )
-  
+# The code below relies on click input from the renderDT function to generate the subsetted dataset to return. If the user does not select anything then the full dataset is available for download.
+
+#Creating a reactive data table that will allow users to click to select rows and columns. Users can also use the search feature in the data table to further subset their data. 
   CDC2<- Deaths_Data[,1:13]
   output$CDCdataset<- renderDT(CDC2, server=TRUE, selection=list(target='row+column'))
   
@@ -259,18 +266,28 @@ output$predictValueFlu<-renderUI({
 
   
 
-  
+  #Storing user input from the datatable to be used to 
   output$testDownloadDF<- renderDT({
      r<-Deaths_Data[input$CDCdataset_rows_selected, , drop=FALSE]
      c<-r[, input$CDCdataset_columns_selected, drop=FALSE]
-    datatable(r<-Deaths_Data[input$CDCdataset_rows_selected, , drop=FALSE])
+    datatable(c)
  })
   
-    #Allow users to download the dataset
-  output$download<- downloadHandler(
+    #Allow users to download the data set based on selections in the data table 
+  output$downloadSelect<- downloadHandler(
+    filename = function(){paste("CDC_Covid_Deaths_Selected", Sys.Date(), ".csv", sep = "")},
+    content = function(file){
+      r<-Deaths_Data[input$CDCdataset_rows_selected, , drop=FALSE]
+      write.csv(r[, input$CDCdataset_columns_selected, drop=FALSE], file)}
+    )
+  
+  #Allow users to download the full data set
+  output$downloadAll<- downloadHandler(
     filename = function(){paste("CDC_Covid_Deaths", Sys.Date(), ".csv", sep = "")},
     content = function(file){
-      r<-input$CDCdataset_rows_all
-      write.csv(CDC2[r, , drop = FALSE], file)}
-    )
+      write.csv(Deaths_Data, file)}
+  )
+  
+  
+  
 })

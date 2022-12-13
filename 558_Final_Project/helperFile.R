@@ -318,6 +318,7 @@ create_histogram <- function(x, bin) {
 ##########Code to create a train and test set########################
 #Code to split the data to create trainIndex
 create_split<-function(percent){
+  set.seed(123)
   trainIndex<- createDataPartition(Deaths_Model_Set$Covid_19_Deaths, p = percent/100, list=FALSE)
 }
 
