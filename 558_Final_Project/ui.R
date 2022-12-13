@@ -211,14 +211,14 @@ shinyUI(fluidPage(
                                width = 4,
                                solidHeader = TRUE,
                                status = "primary",
-                               h4(tree_info_text)
+                               tree_info_text
                              ),
                              box(
                                title = h1("Random Forest Model"),
                                width = 4,
                                solidHeader = TRUE,
                                status = "primary",
-                               h4(rf_info_text)
+                               rf_info_text
                              )
                            ),
                            #Model fitting tab allowing for user input
@@ -308,42 +308,45 @@ shinyUI(fluidPage(
                                           solidHeader = TRUE,
                                           status = "primary",
                                           box(
-                                            title = "Table of Fit Statistics on Training Set",
-                                            width = NULL,
-                                            solidHeader = TRUE,
-                                            status = "primary",
-                                            DTOutput(outputId = "testPredictDataFrame")
-                                          ),
-                                          box(
                                             title = "Linear Model Performance on Training Set",
                                             width = NULL,
                                             solidHeader = TRUE,
                                             status = "primary",
-                                            DTOutput("selected_lm")
+                                            DTOutput("selected_lm")%>%
+                                              withSpinner()
                                           ),
                                           box(
                                             title = "Regression Tree Model Performance on Training Set",
                                             width = NULL,
                                             solidHeader = TRUE,
                                             status = "primary",
-                                            DTOutput(outputId = "selected_tree"),
-                                            plotOutput(outputId = "tree_plot")
+                                            DTOutput(outputId = "selected_tree")%>%
+                                              withSpinner(),
+                                            plotOutput(outputId = "tree_plot")%>%
+                                              withSpinner()
                                           ),
                                           box(
                                             title = "Random Forest Model Performance on Training Set",
                                             width = NULL,
                                             solidHeader = TRUE,
                                             status = "primary",
-                                            DTOutput(outputId = "selected_forest")
+                                            DTOutput(outputId = "selected_forest")%>%
+                                              withSpinner()
                                           ),
                                           box(
                                             title = "Comparing Fit Statistics on Test Set For Our Models",
                                             width = NULL,
                                             solidHeader = TRUE,
                                             status = "primary",
-                                            DTOutput(outputId = "testMLRFit"),
-                                            DTOutput(outputId = "testTreeFit"),
-                                            DTOutput(outputId = "testRfFit")
+                                            h3("MLR Model Performance on Test Set"),
+                                            DTOutput(outputId = "testMLRFit")%>%
+                                              withSpinner(),
+                                            h3("Regression Tree Model Performance on Test Set"),
+                                            DTOutput(outputId = "testTreeFit")%>%
+                                              withSpinner(),
+                                            h3("Random Forest Model Performance on Test Set"),
+                                            DTOutput(outputId = "testRfFit")%>%
+                                              withSpinner()
                                           )
                                         )
                                       )
@@ -353,12 +356,14 @@ shinyUI(fluidPage(
                                     fluidRow(
                                       #Input prediction values
                                       column(
-                                        width = 8,
+                                        width = 3,
                                         box(
-                                          title="What values would you like to use for your predictions?",
+                                          title="Make Predictions Using Your MLR Model!",
+                                          h4("What values would you like to use for your predictions?"),
                                           width = NULL,
                                           solidHeader = TRUE,
                                           status = "primary",
+                                          uiOutput("predictAll"),
                                           uiOutput("predictValueWeek"),
                                           uiOutput("predictValueYear"),
                                           uiOutput("predictValueJurisdiction"),
@@ -423,18 +428,26 @@ shinyUI(fluidPage(
                                         #     max = 3000,
                                         #     value = 0
                                         #   )
-                                        #   
+                                        # 
                                         # )
                                       ),
                                       column(
-                                        width = 4,
+                                        width = 9,
                                         box(
                                           title = "Values Used to Calculate Predictions for Covid (MLR Model)",
                                           width = NULL,
                                           solidHeader = TRUE,
                                           status = "primary",
-                                          textOutput(outputId = "predictionsTable"
+                                          DTOutput(outputId = "testPredictDataFrame"
                                                           )
+                                        ),
+                                        box(
+                                          title = "Values Used to Calculate Predictions for Covid (MLR Model)",
+                                          width = NULL,
+                                          solidHeader = TRUE,
+                                          status = "primary",
+                                          textOutput(outputId = "predictionsMessage"
+                                          )
                                         )
                                       )
                                       
@@ -475,7 +488,8 @@ shinyUI(fluidPage(
                                width = NULL,
                                solidHeader = TRUE,
                                status = "primary",
-                               DTOutput(outputId = "CDCdataset")
+                               DTOutput(outputId = "CDCdataset")%>%
+                                 withSpinner()
                              ),
                              box(
                                title = "Click the button to See Filtered Dataset",

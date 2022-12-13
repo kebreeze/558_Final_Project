@@ -11,9 +11,6 @@ library(rpart)
 library(randomForest)
 library(caret)
 
-print("CURRENT DIRECTORY")
-print(getwd())
-# source(".Renviron")
  source("text.R")
  source("dict.R")
  source("helperFile.R")
@@ -50,7 +47,7 @@ shinyServer(function(input, output, session) {
   )
   ##########Model Fitting Page Code################
   
-  ######Using eventReactive to store outputs from user selections for model inputs when action button runModels is pressed#########
+  ######Using bindEvent to store outputs from user selections for model inputs when action button runModels is pressed#########
   
   #create index, train and test sets based on user input for percentage to include in training set
   trainIndex <-
@@ -81,8 +78,6 @@ shinyServer(function(input, output, session) {
   # #fit for MLR model
    output$selected_lm <- renderDT({datatable(MLRmodel()$results)})
      
-     #modelVars[input$lmVarNames])
-     
   # #fit for regression tree model
   output$selected_tree <- renderDT({datatable(treeModel()$results)})
    output$tree_plot <- renderPlot({
@@ -95,34 +90,47 @@ shinyServer(function(input, output, session) {
 
 ############################Performance on test set
    
+   #MLR Model performance data table
+   output$testMLRFit <- renderDT({
+     MLRmod <- MLRmodel()
+     testingSet <- testSet()
+     pred <- predict(MLRmod, newdata = testingSet)
+     fit <- postResample(pred, obs = testingSet$Covid_19_Deaths)
+     tibble(
+       model = "MLR",
+       RMSE = fit[[1]],
+       Rsquared = fit[[2]]
+     )
+   }) %>% bindEvent(input$runModels)
    
-   output$testMLRFit<- renderDT({
-     mlrFit<- testMLRResults()
-     tibble(model=c("MLR"), RMSE = c(testMLRResults()[[1]]), Rsquared = c(mlrFit[[2]]))
-     })
-   
-    testMLRResults<- reactive({
-      MLRmod<-MLRmodel()
+
+    #Tree model performance table
+    output$testTreeFit<- renderDT({
+      treemod<-treeModel()
       testingSet<-testSet()
-      pred<-round(predict(MLRmod, newdata=testingSet))
+      pred<-predict(treemod, newdata=testingSet)
       fit<-postResample(pred, obs=testingSet$Covid_19_Deaths)
-      return(fit)
+      tibble(model="Tree", RMSE = fit[[1]], Rsquared = fit[[2]])
     })%>%bindEvent(input$runModels)
-
-
+    
+    #Random forest model performance
+    output$testRfFit<- renderDT({
+      rfmod<-rfModel()
+      testingSet<-testSet()
+      pred<-predict(rfmod, newdata=testingSet)
+      fit<-postResample(pred, obs=testingSet$Covid_19_Deaths)
+      tibble(model="Random Forest", RMSE = fit[[1]], Rsquared = fit[[2]])
+    })%>%bindEvent(input$runModels)
     
 ###############Prediction Tab Code#################
    ######create reactive elements for use with ui for predict page
    
-
-   
-   #mmwrweek<- reactive({mmwrweek = input$week})%>%bindEvent()
-   
+#####Create a data frame to generate based on user checkbox input for lmVarNames
    testPredictDataFrame<-reactive({
-     data.frame(matrix(ncol=length(input$lmVarNames), nrow = 1))
+     data.frame(matrix(ncol=length(input$lmVarNames), nrow = 1, dimnames = list("Prediction Input Value", input$lmVarNames) ))
    })%>%bindEvent(input$runModels)
-   # 
-   # 
+    
+   
    output$testPredictDataFrame<-renderDT({
      datatable(testPredictDataFrame())
    })
@@ -147,28 +155,71 @@ shinyServer(function(input, output, session) {
   })%>%bindEvent(input$predict)
   
   #######This works to generate predictions
-  output$predictionsTable <- renderText({
+  output$predictionsMessage <- renderText({
     predictions <- deathPredict()
     
     paste("Predicted Covid Deaths", predictions)
   })
   
-  
+  output$predictAll<-renderUI({
+    if (is.null(input$lmVarNames)){
+      box(
+        title = "Predict Using Your MLR Model",
+        width = NULL,
+        solidHeader = TRUE,
+        status = "primary",
+        selectInput(
+          inputId = "week",
+          label = "Report Week",
+          choices = 1:52
+        ),
+        selectInput(
+          inputId = "year",
+          label = "Report Year",
+          choices = c(2020, 2021, 2022)
+        ),
+        selectInput(
+          inputId = "jurisdiction",
+          label = "Jurisdiction",
+          choices = state.name
+        ),
+        selectInput(
+          inputId = "age",
+          label = "Age Group",
+          choices = c("All Ages",
+                      "0-17 years",
+                      "18-64 years",
+                      "65 years and over")
+        ),
+        sliderInput(
+          inputId = "deathTotal",
+          label = "Total Deaths (All Causes)",
+          min = 0,
+          max = 100000,
+          value = 0
+        ),
+        sliderInput(
+          inputId = "pneumonia",
+          label = "Pneumonia Deaths",
+          min = 0,
+          max = 10000,
+          value = 0
+        ),
+        sliderInput(
+          inputId = "flu",
+          label = "Influenza Deaths",
+          min = 0,
+          max = 3000,
+          value = 0
+        )
+        
+      )
+      
+    }
+  })%>%bindEvent(input$runModels)
 
   
-  #reactive ui based on input for model variables in model fitting tab
-   # weekReact<-reactive({
-   #   if ("Report Week" %in% input$lmVarNames){
-   #     selectInput(
-   #       inputId = "week",
-   #       label = "Report Week",
-   #       choices = 1:52
-   #     )
-   #   }
-   # })%>%bindEvent(input$predict)
 
-
-  
   output$predictValueWeek<-renderUI({
     if ("Report Week"%in%(input$lmVarNames)){
       selectInput(
@@ -177,7 +228,7 @@ shinyServer(function(input, output, session) {
         choices = 1:52
       )
     }
-  })
+  })%>%bindEvent(input$runModels)
 
   output$predictValueYear<-renderUI({
     if("Report Year"%in%(input$lmVarNames)){
@@ -187,7 +238,7 @@ shinyServer(function(input, output, session) {
         choices = c(2020, 2021, 2022))
     }
   }
-  )
+  )%>%bindEvent(input$runModels)
     
   output$predictValueJurisdiction<-renderUI({
     if("Jurisdiction"%in%(input$lmVarNames)){
@@ -196,7 +247,7 @@ shinyServer(function(input, output, session) {
       label = "Jurisdiction",
       choices = state.name)
     }
-  })
+  })%>%bindEvent(input$runModels)
   
   output$predictValueAge<- renderUI({
     if("Age Group"%in%(input$lmVarNames))
@@ -208,7 +259,7 @@ shinyServer(function(input, output, session) {
                   "18-64 years",
                   "65 years and over")
     )
-  })
+  })%>%bindEvent(input$runModels)
   
 output$predictValueDeathTotal<- renderUI({
   if("Total Deaths (All Causes)"%in%(input$lmVarNames))
@@ -219,10 +270,10 @@ output$predictValueDeathTotal<- renderUI({
     max = 100000,
     value = 0
   )
-})
+})%>%bindEvent(input$runModels)
 
 output$predictValuePneumonia<-renderUI({
-  if("Pneumonia"%in%(input$lmVarNames))
+  if("Pneumonia Deaths"%in%(input$lmVarNames))
   sliderInput(
     inputId = "pneumonia",
     label = "Pneumonia Deaths",
@@ -230,7 +281,7 @@ output$predictValuePneumonia<-renderUI({
     max = 10000,
     value = 0
   )
-})
+})%>%bindEvent(input$runModels)
 
 output$predictValueFlu<-renderUI({
   if("Influenza Deaths"%in%(input$lmVarNames))
@@ -241,7 +292,7 @@ output$predictValueFlu<-renderUI({
     max = 3000,
     value = 0
   )
-})
+})%>%bindEvent(input$runModels)
   
   
   
